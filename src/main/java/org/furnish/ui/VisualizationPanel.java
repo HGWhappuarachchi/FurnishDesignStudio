@@ -14,6 +14,7 @@ public class VisualizationPanel extends JPanel {
     private double rotationX = 0;
     private double rotationY = 0;
     private double lastMouseX, lastMouseY;
+    private float zoomFactor = 1.0f;
 
     public VisualizationPanel(FurnitureDesignApp parent) {
         this.parent = parent;
@@ -23,6 +24,21 @@ public class VisualizationPanel extends JPanel {
 
     private void initializePanel() {
         setPreferredSize(new Dimension(1000, 900));
+    }
+
+    public void zoomIn() {
+        zoomFactor *= 1.1f;
+        repaint();
+    }
+
+    public void zoomOut() {
+        zoomFactor /= 1.1f;
+        repaint();
+    }
+
+    public void resetView() {
+        zoomFactor = 1.0f;
+        repaint();
     }
 
     private void setupMouseListeners() {
