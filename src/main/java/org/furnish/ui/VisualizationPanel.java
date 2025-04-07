@@ -1,9 +1,24 @@
 package org.furnish.ui;
 
-import org.furnish.core.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+
+import javax.swing.JPanel;
+
+import org.furnish.core.Design;
+import org.furnish.core.Furniture;
+import org.furnish.core.Room;
 
 public class VisualizationPanel extends JPanel {
     private Design design;
@@ -14,6 +29,9 @@ public class VisualizationPanel extends JPanel {
     private double rotationX = 0;
     private double rotationY = 0;
     private double lastMouseX, lastMouseY;
+    private double zoomFactor = 1.0;
+    private Point2D viewportPosition = new Point2D.Double(0, 0);
+    private Point lastMousePosition;
 
     public VisualizationPanel(FurnitureDesignApp parent) {
         this.parent = parent;
@@ -29,6 +47,8 @@ public class VisualizationPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow();
+                lastMousePosition = e.getPoint();
                 handleMousePress(e);
             }
 
@@ -41,13 +61,63 @@ public class VisualizationPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                handleMouseDrag(e);
+                if (draggedFurniture != null) {
+                    handleMouseDrag(e);
+                } else if (e.isControlDown() || e.isShiftDown()) {
+                    // Pan the view when Ctrl or Shift is held while dragging
+                    int dx = e.getX() - lastMousePosition.x;
+                    int dy = e.getY() - lastMousePosition.y;
+                    viewportPosition.setLocation(
+                        viewportPosition.getX() + dx / zoomFactor,
+                        viewportPosition.getY() + dy / zoomFactor
+                    );
+                    lastMousePosition = e.getPoint();
+                    repaint();
+                }
             }
+        });
+
+        // Add mouse wheel listener for zooming
+        addMouseWheelListener(e -> {
+            handleZoom(e);
         });
     }
 
+    private void handleZoom(MouseWheelEvent e) {
+        double oldZoom = zoomFactor;
+        int notches = e.getWheelRotation();
+        
+        // Calculate zoom factor
+        if (notches < 0) {
+            // Zoom in
+            zoomFactor = Math.min(5.0, zoomFactor * 1.1);
+        } else {
+            // Zoom out
+            zoomFactor = Math.max(0.2, zoomFactor / 1.1);
+        }
+        
+        // Get mouse position in untransformed coordinates
+        Point mousePos = e.getPoint();
+        
+        // Adjust viewport position to zoom toward mouse pointer
+        viewportPosition.setLocation(
+            viewportPosition.getX() + (mousePos.x / oldZoom - mousePos.x / zoomFactor),
+            viewportPosition.getY() + (mousePos.y / oldZoom - mousePos.y / zoomFactor)
+        );
+        
+        repaint();
+    }
+
+    private Point2D transformPoint(Point point) {
+        return new Point2D.Double(
+            point.x / zoomFactor + viewportPosition.getX(),
+            point.y / zoomFactor + viewportPosition.getY()
+        );
+    }
+
     private void handleMousePress(MouseEvent e) {
-        dragStartPoint = e.getPoint();
+        requestFocusInWindow();
+        lastMousePosition = e.getPoint();
         lastMouseX = e.getX();
         lastMouseY = e.getY();
 
@@ -66,20 +136,37 @@ public class VisualizationPanel extends JPanel {
         int offsetX = getWidth() / 2;
         int offsetY = getHeight() / 2;
 
+        // Convert mouse coordinates to 3D space
+        Point2D transformedPoint = transformPoint(e.getPoint());
+        double mouseX = transformedPoint.getX();
+        double mouseY = transformedPoint.getY();
+
+        // Find the closest furniture item
+        double minDistance = Double.MAX_VALUE;
+        Furniture closestFurniture = null;
+
         for (Furniture f : design.getFurnitureList()) {
             Point center = project(
                     f.getX() + f.getWidth() / 2,
                     f.getHeight() / 2,
                     f.getZ() + f.getDepth() / 2,
                     scale, offsetX, offsetY);
+            
             double distance = Math.sqrt(
-                    Math.pow(e.getX() - center.x, 2) +
-                            Math.pow(e.getY() - center.y, 2));
-            if (distance < 20) {
-                draggedFurniture = f;
-                parent.setSelectedFurniture(f);
-                break;
+                    Math.pow(mouseX - center.x, 2) +
+                    Math.pow(mouseY - center.y, 2));
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestFurniture = f;
             }
+        }
+
+        // If we found a furniture item close enough to the click
+        if (closestFurniture != null && minDistance < 30) {
+            draggedFurniture = closestFurniture;
+            parent.setSelectedFurniture(closestFurniture);
+            dragStartPoint = new Point((int)mouseX, (int)mouseY);
         }
     }
 
@@ -105,13 +192,49 @@ public class VisualizationPanel extends JPanel {
     }
 
     private void handleMouseDrag(MouseEvent e) {
-        if (is3DView && draggedFurniture == null) {
-            double deltaX = e.getX() - lastMouseX;
-            double deltaY = e.getY() - lastMouseY;
-            rotationY += deltaX * 0.01;
-            rotationX += deltaY * 0.01;
+        if (is3DView) {
+            if (draggedFurniture != null) {
+                // Handle furniture dragging in 3D
+                double scale = getScaleFactor();
+                int offsetX = getWidth() / 2;
+                int offsetY = getHeight() / 2;
+
+                // Convert mouse coordinates to 3D space
+                Point2D transformedPoint = transformPoint(e.getPoint());
+                double mouseX = transformedPoint.getX();
+                double mouseY = transformedPoint.getY();
+
+                // Calculate movement in 3D space
+                double dx = (mouseX - dragStartPoint.x) / scale;
+                double dy = (mouseY - dragStartPoint.y) / scale;
+
+                // Update furniture position
+                draggedFurniture.setX(Math.max(0, Math.min(
+                        draggedFurniture.getX() + dx,
+                        design.getRoom().getLength() - draggedFurniture.getWidth())));
+                draggedFurniture.setZ(Math.max(0, Math.min(
+                        draggedFurniture.getZ() + dy,
+                        design.getRoom().getWidth() - draggedFurniture.getDepth())));
+
+                dragStartPoint = new Point((int)mouseX, (int)mouseY);
+                parent.propertiesPanel.update(draggedFurniture);
+            } else {
+                // Handle 3D view rotation
+                double deltaX = e.getX() - lastMouseX;
+                double deltaY = e.getY() - lastMouseY;
+                
+                // Adjust rotation speed based on zoom level
+                double rotationSpeed = 0.01 / zoomFactor;
+                
+                rotationY += deltaX * rotationSpeed;
+                rotationX += deltaY * rotationSpeed;
+                
+                // Limit rotation angles
+                rotationX = Math.max(-Math.PI/2, Math.min(Math.PI/2, rotationX));
+            }
             repaint();
         } else if (draggedFurniture != null && !is3DView) {
+            // Existing 2D dragging code
             double scale = Math.min(
                     getWidth() / design.getRoom().getLength(),
                     getHeight() / design.getRoom().getWidth());
@@ -155,15 +278,36 @@ public class VisualizationPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (design == null)
             return;
+
+        // Save original transform
+        AffineTransform originalTransform = g2d.getTransform();
+        
+        // Apply zoom and pan transformations
+        g2d.translate(-viewportPosition.getX() * zoomFactor, -viewportPosition.getY() * zoomFactor);
+        g2d.scale(zoomFactor, zoomFactor);
 
         if (is3DView) {
             draw3D(g2d);
         } else {
             draw2D(g2d);
         }
+
+        // Restore original transform
+        g2d.setTransform(originalTransform);
+        
+        // Draw zoom level indicator
+        drawZoomIndicator(g2d);
+    }
+
+    private void drawZoomIndicator(Graphics2D g2d) {
+        String zoomText = String.format("%d%%", (int)(zoomFactor * 100));
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Montserrat", Font.BOLD, 14));
+        g2d.drawString(zoomText, 10, 20);
     }
 
     private void draw2D(Graphics2D g2d) {
@@ -198,14 +342,22 @@ public class VisualizationPanel extends JPanel {
         int offsetX = getWidth() / 2;
         int offsetY = getHeight() / 2;
 
+        // Save the current transform
+        AffineTransform originalTransform = g2d.getTransform();
+
+        // Apply 3D transformations
         g2d.translate(offsetX, offsetY);
-        g2d.rotate(rotationY); // Y-axis rotation
-        g2d.rotate(rotationX); // X-axis rotation
+        g2d.rotate(rotationY, 0, 0); // Y-axis rotation
+        g2d.rotate(rotationX, 0, 0); // X-axis rotation
         g2d.translate(-offsetX, -offsetY);
 
+        // Draw room elements
         drawFloor(g2d, room, scale, offsetX, offsetY);
         drawWalls(g2d, room, scale, offsetX, offsetY);
         drawFurniture(g2d, scale, offsetX, offsetY);
+
+        // Restore the original transform
+        g2d.setTransform(originalTransform);
     }
 
     private void drawFloor(Graphics2D g2d, Room room,
@@ -253,13 +405,24 @@ public class VisualizationPanel extends JPanel {
                 4);
     }
 
-    private void drawFurniture(Graphics2D g2d,
-            double scale, int offsetX, int offsetY) {
+    private void drawFurniture(Graphics2D g2d, double scale, int offsetX, int offsetY) {
         for (Furniture f : design.getFurnitureList()) {
+            if (f == draggedFurniture) {
+                // Highlight selected furniture
+                g2d.setColor(f.getColor().brighter());
+            } else {
+                g2d.setColor(f.getColor());
+            }
+
             if (f.getType().equals("Chair")) {
                 drawChair3D(g2d, f, scale, offsetX, offsetY);
             } else if (f.getType().equals("Table")) {
                 drawTable3D(g2d, f, scale, offsetX, offsetY);
+            } else {
+                // Default box for other furniture types
+                drawBox3D(g2d, f.getX(), 0, f.getZ(), 
+                         f.getWidth(), f.getDepth(), f.getHeight(),
+                         scale, offsetX, offsetY, f.getColor());
             }
         }
     }
