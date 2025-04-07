@@ -1,11 +1,44 @@
 package org.furnish;
 
-import javax.swing.*;
-import org.furnish.utils.CloseButtonUtil;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import org.furnish.utils.CloseButtonUtil;
+
 public class SignUpScreen extends JFrame {
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
+    private static final Color BACKGROUND_COLOR = new Color(23, 23, 38);
+    private static final Color ACCENT_COLOR = new Color(46, 204, 113);
+    private static final Color TEXT_COLOR = new Color(236, 240, 241);
+    private static final Color INPUT_BACKGROUND = new Color(44, 62, 80);
+    private static final Color INPUT_BORDER = new Color(52, 73, 94);
+
     public SignUpScreen() {
         setTitle("Furnish Studio - Sign Up");
         setSize(500, 850);
@@ -21,13 +54,14 @@ public class SignUpScreen extends JFrame {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-                GradientPaint gradient = new GradientPaint(0, 0, new Color(23, 23, 38), 0, getHeight(),
+                GradientPaint gradient = new GradientPaint(0, 0, BACKGROUND_COLOR, 0, getHeight(),
                         new Color(42, 42, 74));
                 g2d.setPaint(gradient);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
 
-                g2d.setColor(new Color(255, 255, 255, 20));
+                g2d.setColor(new Color(255, 255, 255, 10));
                 for (int i = 0; i < 3; i++) {
                     g2d.fillOval(100 + i * 150, 50, 80, 80);
                 }
@@ -38,6 +72,19 @@ public class SignUpScreen extends JFrame {
 
         // Close button
         JButton closeButton = CloseButtonUtil.createCloseButton();
+        closeButton.setBackground(new Color(255, 255, 255, 0));
+        closeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        closeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                closeButton.setBackground(new Color(255, 255, 255, 20));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                closeButton.setBackground(new Color(255, 255, 255, 0));
+            }
+        });
+
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.setOpaque(false);
         topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -57,10 +104,17 @@ public class SignUpScreen extends JFrame {
 
         // Title
         JLabel titleLabel = new JLabel("CREATE ACCOUNT");
-        titleLabel.setFont(new Font("Montserrat", Font.BOLD, 28));
-        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Montserrat", Font.BOLD, 32));
+        titleLabel.setForeground(TEXT_COLOR);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 30, 0));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+
+        // Subtitle
+        JLabel subtitleLabel = new JLabel("Join our design community");
+        subtitleLabel.setFont(new Font("Montserrat", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(189, 195, 199));
+        subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        subtitleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
 
         // Input fields panel
         JPanel inputPanel = new JPanel();
@@ -94,94 +148,81 @@ public class SignUpScreen extends JFrame {
         inputPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
         // Sign up button
-        JButton signUpButton = new RoundedButton("CREATE ACCOUNT");
-        signUpButton.setFont(new Font("Montserrat", Font.BOLD, 16));
-        signUpButton.setBackground(new Color(92, 184, 92));
+        RoundedButton signUpButton = new RoundedButton("CREATE ACCOUNT");
+        signUpButton.setBackground(PRIMARY_COLOR);
         signUpButton.setForeground(Color.WHITE);
-        signUpButton.setFocusPainted(false);
-        signUpButton.setBorder(BorderFactory.createEmptyBorder(15, 40, 15, 40));
+        signUpButton.setFont(new Font("Montserrat", Font.BOLD, 14));
         signUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        signUpButton.addActionListener(e -> {
-            String password = new String(passwordField.getPassword());
-            String confirmPassword = new String(confirmPasswordField.getPassword());
-
-            if (!password.equals(confirmPassword)) {
-                JOptionPane.showMessageDialog(this, "Passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+        signUpButton.setMaximumSize(new Dimension(200, 45));
+        signUpButton.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+        signUpButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                signUpButton.setBackground(SECONDARY_COLOR);
             }
-
-            // Save user data
-            JOptionPane.showMessageDialog(this, "Account created successfully!", "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-            new LoginScreen().setVisible(true);
-            dispose();
+            @Override
+            public void mouseExited(MouseEvent e) {
+                signUpButton.setBackground(PRIMARY_COLOR);
+            }
         });
 
-        // Login prompt
-        JLabel loginLabel = new JLabel("Already have an account?");
-        loginLabel.setFont(new Font("Montserrat", Font.PLAIN, 14));
-        loginLabel.setForeground(new Color(200, 200, 200));
-        loginLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Login button
-        JButton loginButton = new JButton("Login");
-        loginButton.setFont(new Font("Montserrat", Font.BOLD, 14));
-        loginButton.setContentAreaFilled(false);
-        loginButton.setBorderPainted(false);
-        loginButton.setForeground(new Color(92, 184, 92));
-        loginButton.setFocusPainted(false);
-        loginButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 20, 5));
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loginButton.addActionListener(e -> {
-            new LoginScreen().setVisible(true);
-            dispose();
-        });
+        // Terms and conditions
+        JLabel termsLabel = new JLabel("By signing up, you agree to our Terms and Privacy Policy");
+        termsLabel.setFont(new Font("Montserrat", Font.PLAIN, 12));
+        termsLabel.setForeground(new Color(189, 195, 199));
+        termsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        termsLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
 
         // Add components to content panel
         contentPanel.add(logo);
         contentPanel.add(titleLabel);
+        contentPanel.add(subtitleLabel);
         contentPanel.add(inputPanel);
         contentPanel.add(signUpButton);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        contentPanel.add(loginLabel);
-        contentPanel.add(loginButton);
+        contentPanel.add(termsLabel);
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
-
-        // Footer
-        JLabel footer = new JLabel("© 2025 Furnish Studio | Terms | Privacy");
-        footer.setFont(new Font("Montserrat", Font.PLAIN, 12));
-        footer.setForeground(new Color(150, 150, 150));
-        footer.setHorizontalAlignment(SwingConstants.CENTER);
-        footer.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
-        mainPanel.add(footer, BorderLayout.SOUTH);
     }
 
-    // Custom styled text field
     private JTextField createStyledTextField(String placeholder) {
-        JTextField textField = new JTextField(20);
-        textField.setFont(new Font("Montserrat", Font.PLAIN, 16));
-        textField.setForeground(Color.WHITE);
-        textField.setBackground(new Color(60, 60, 90));
-        textField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(80, 80, 110), 2),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-        textField.setCaretColor(Color.WHITE);
-        textField.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // Placeholder text
-        textField.setText(placeholder);
-        textField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                if (textField.getText().equals(placeholder)) {
-                    textField.setText("");
+        JTextField textField = new JTextField(placeholder) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (!getText().isEmpty()) {
+                    super.paintComponent(g);
+                } else {
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2d.setColor(new Color(189, 195, 199));
+                    g2d.drawString(placeholder, getInsets().left, g.getFontMetrics().getMaxAscent() + getInsets().top);
                 }
             }
+        };
+        textField.setOpaque(false);
+        textField.setForeground(TEXT_COLOR);
+        textField.setFont(new Font("Montserrat", Font.PLAIN, 14));
+        textField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+        textField.setBorder(new CompoundBorder(
+            new LineBorder(INPUT_BORDER, 1, true),
+            new EmptyBorder(10, 15, 10, 15)
+        ));
+        textField.setBackground(INPUT_BACKGROUND);
+        textField.setCaretColor(TEXT_COLOR);
 
+        textField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                textField.setBorder(new CompoundBorder(
+                    new LineBorder(PRIMARY_COLOR, 1, true),
+                    new EmptyBorder(10, 15, 10, 15)
+                ));
+            }
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
-                if (textField.getText().isEmpty()) {
-                    textField.setText(placeholder);
-                }
+                textField.setBorder(new CompoundBorder(
+                    new LineBorder(INPUT_BORDER, 1, true),
+                    new EmptyBorder(10, 15, 10, 15)
+                ));
             }
         });
 
