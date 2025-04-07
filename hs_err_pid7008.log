@@ -20,7 +20,7 @@
 
 ---------------  S U M M A R Y ------------
 
-Command Line: -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.5\lib\idea_rt.jar=53469 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 org.Ghapurachchi.FurnitureDesignApp
+Command Line: -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.5\lib\idea_rt.jar=53469 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 org.furnish.FurnitureDesignApp
 
 Host: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz, 8 cores, 15G,  Windows 11 , 64 bit Build 26100 (10.0.26100.3323)
 Time: Wed Apr  2 10:30:23 2025 Sri Lanka Standard Time elapsed time: 1608.124762 seconds (0d 0h 26m 48s)
@@ -793,7 +793,7 @@ symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Us
 
 VM Arguments:
 jvm_args: -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.5\lib\idea_rt.jar=53469 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 
-java_command: org.Ghapurachchi.FurnitureDesignApp
+java_command: org.furnish.FurnitureDesignApp
 java_class_path (initial): G:\java\Swing Design\target\classes;C:\Users\ganin\.m2\repository\com\google\code\gson\gson\2.8.9\gson-2.8.9.jar
 Launcher Type: SUN_STANDARD
 

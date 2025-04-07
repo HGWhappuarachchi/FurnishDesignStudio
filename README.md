@@ -34,7 +34,7 @@ The **Furniture Design App** is a Java-based desktop application built using the
 
 2. **Open in an IDE**:
    - Import the project into your preferred IDE as a Java project.
-   - Ensure the package structure (`org.Ghapurachchi`) is maintained.
+   - Ensure the package structure (`org.furnish`) is maintained.
 
 3. **Compile and Run**:
    - Compile the project using your IDE’s build tools.
@@ -43,7 +43,7 @@ The **Furniture Design App** is a Java-based desktop application built using the
    Alternatively, from the command line:
    ```bash
    javac org/Ghapurachchi/FurnitureDesignApp.java
-   java org.Ghapurachchi.FurnitureDesignApp
+   java org.furnish.FurnitureDesignApp
    ```
 
 ## Usage
