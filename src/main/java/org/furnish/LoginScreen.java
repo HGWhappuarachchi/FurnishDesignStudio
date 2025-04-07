@@ -1,12 +1,32 @@
 package org.furnish;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.RoundRectangle2D;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.furnish.ui.FurnitureDesignApp;
 import org.furnish.utils.CloseButtonUtil;
-
-import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 
 public class LoginScreen extends JFrame {
     public LoginScreen() {
@@ -128,6 +148,22 @@ public class LoginScreen extends JFrame {
         contentPanel.add(inputPanel);
         contentPanel.add(loginButton);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        // Add guest login button
+        JButton guestButton = new JButton("Continue as Guest");
+        guestButton.setFont(new Font("Montserrat", Font.BOLD, 14));
+        guestButton.setContentAreaFilled(false);
+        guestButton.setBorderPainted(false);
+        guestButton.setForeground(new Color(92, 184, 92));
+        guestButton.setFocusPainted(false);
+        guestButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 20, 5));
+        guestButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        guestButton.addActionListener(e -> {
+            new DashboardScreen().setVisible(true);
+            dispose();
+        });
+        contentPanel.add(guestButton);
+        
         contentPanel.add(signUpLabel);
         contentPanel.add(signUpButton);
 
