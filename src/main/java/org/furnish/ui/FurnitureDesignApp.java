@@ -13,12 +13,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -42,6 +39,7 @@ import javax.swing.UIManager;
 
 import org.furnish.DashboardScreen;
 import org.furnish.core.Design;
+import org.furnish.core.DesignManager;
 import org.furnish.core.Furniture;
 import org.furnish.utils.CloseButtonUtil;
 
@@ -348,27 +346,14 @@ public class FurnitureDesignApp extends JFrame {
 
     private void saveDesign() {
         if (currentDesign == null) {
-            showErrorDialog("No design to save. Please create a new design first.");
-            return;
+            currentDesign = new Design();
         }
 
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Save Design");
-        fileChooser.setSelectedFile(new File("design.furnish"));
-
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            if (!file.getName().toLowerCase().endsWith(".furnish")) {
-                file = new File(file.getParentFile(), file.getName() + ".furnish");
-            }
-
-            try (ObjectOutputStream oos = new ObjectOutputStream(
-                    new FileOutputStream(file))) {
-                oos.writeObject(currentDesign);
-                updateStatus("Design saved to: " + file.getAbsolutePath());
-            } catch (IOException ex) {
-                showErrorDialog("Error saving design: " + ex.getMessage());
-            }
+        String name = JOptionPane.showInputDialog(this, "Enter design name:", "Save Design", JOptionPane.PLAIN_MESSAGE);
+        if (name != null && !name.trim().isEmpty()) {
+            currentDesign.setName(name);
+            DesignManager.saveDesign(currentDesign);
+            statusLabel.setText("Design saved: " + name);
         }
     }
 
@@ -463,6 +448,15 @@ public class FurnitureDesignApp extends JFrame {
         view2D3DToggle.setSelected(!is3D);
         visualizationPanel.set3DView(!is3D);
         view2D3DToggle.setText(!is3D ? "3D View" : "2D View");
+    }
+
+    public void setDesign(Design design) {
+        this.currentDesign = design;
+        if (visualizationPanel != null) {
+            visualizationPanel.setDesign(design);
+            updateStatus("Loaded design: " + design.getName());
+            repaint();
+        }
     }
 
     public static void main(String[] args) {
