@@ -10,6 +10,8 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -26,23 +28,34 @@ import org.furnish.core.Design;
 import org.furnish.core.DesignManager;
 
 public class MyDesignsPanel extends JPanel {
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
+    private static final Color BACKGROUND_COLOR = new Color(60, 60, 90);
+    private static final Color CARD_BACKGROUND = new Color(80, 80, 110);
+    private static final Color CARD_BORDER = new Color(100, 100, 130);
+    private static final Color CARD_HOVER = new Color(90, 90, 120);
+    private static final Color TEXT_COLOR = new Color(236, 240, 241);
+    private static final Color BUTTON_OPEN_COLOR = new Color(46, 204, 113);
+    private static final Color BUTTON_DELETE_COLOR = new Color(231, 76, 60);
+    private static final Color BUTTON_HOVER = new Color(52, 73, 94);
+
     private JPanel designsPanel;
     private JScrollPane scrollPane;
 
     public MyDesignsPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(60, 60, 90));
+        setBackground(BACKGROUND_COLOR);
 
         // Title
         JLabel title = new JLabel("My Designs", SwingConstants.CENTER);
         title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(TEXT_COLOR);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         add(title, BorderLayout.NORTH);
 
         // Designs panel with grid layout
         designsPanel = new JPanel(new GridLayout(0, 3, 20, 20));
-        designsPanel.setBackground(new Color(60, 60, 90));
+        designsPanel.setBackground(BACKGROUND_COLOR);
         designsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Scroll pane for designs
@@ -62,7 +75,7 @@ public class MyDesignsPanel extends JPanel {
         if (designs.isEmpty()) {
             JLabel noDesignsLabel = new JLabel("No saved designs yet", SwingConstants.CENTER);
             noDesignsLabel.setFont(new Font("Montserrat", Font.PLAIN, 16));
-            noDesignsLabel.setForeground(Color.WHITE);
+            noDesignsLabel.setForeground(TEXT_COLOR);
             designsPanel.add(noDesignsLabel);
         } else {
             for (Design design : designs) {
@@ -77,9 +90,22 @@ public class MyDesignsPanel extends JPanel {
 
     private JPanel createDesignCard(Design design) {
         JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(new Color(80, 80, 110));
-        card.setBorder(BorderFactory.createLineBorder(new Color(100, 100, 130), 2));
+        card.setBackground(CARD_BACKGROUND);
+        card.setBorder(BorderFactory.createLineBorder(CARD_BORDER, 2));
         card.setPreferredSize(new Dimension(250, 200));
+
+        // Add hover effect
+        card.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                card.setBackground(CARD_HOVER);
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                card.setBackground(CARD_BACKGROUND);
+            }
+        });
 
         // Design preview (placeholder for now)
         JPanel previewPanel = new JPanel() {
@@ -88,38 +114,40 @@ public class MyDesignsPanel extends JPanel {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Draw gradient background
                 g2d.setColor(new Color(120, 120, 150));
                 g2d.fillRect(0, 0, getWidth(), getHeight());
+                
+                // Draw design name in the center
+                g2d.setColor(TEXT_COLOR);
+                g2d.setFont(new Font("Montserrat", Font.BOLD, 16));
+                String text = design.getName();
+                int textWidth = g2d.getFontMetrics().stringWidth(text);
+                g2d.drawString(text, (getWidth() - textWidth) / 2, getHeight() / 2);
             }
         };
         previewPanel.setPreferredSize(new Dimension(250, 150));
 
         // Design info
         JPanel infoPanel = new JPanel(new BorderLayout());
-        infoPanel.setBackground(new Color(80, 80, 110));
-        infoPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        infoPanel.setBackground(CARD_BACKGROUND);
+        infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
         JLabel nameLabel = new JLabel(design.getName());
         nameLabel.setFont(new Font("Montserrat", Font.BOLD, 14));
-        nameLabel.setForeground(Color.WHITE);
+        nameLabel.setForeground(TEXT_COLOR);
         infoPanel.add(nameLabel, BorderLayout.CENTER);
 
-        JButton openButton = new JButton("Open");
-        openButton.setFont(new Font("Montserrat", Font.PLAIN, 12));
-        openButton.setBackground(new Color(92, 184, 92));
-        openButton.setForeground(Color.WHITE);
-        openButton.setFocusPainted(false);
+        JButton openButton = createStyledButton("Open", BUTTON_OPEN_COLOR);
         openButton.addActionListener(e -> openDesign(design));
 
-        JButton deleteButton = new JButton("Delete");
-        deleteButton.setFont(new Font("Montserrat", Font.PLAIN, 12));
-        deleteButton.setBackground(new Color(217, 83, 79));
-        deleteButton.setForeground(Color.WHITE);
-        deleteButton.setFocusPainted(false);
+        JButton deleteButton = createStyledButton("Delete", BUTTON_DELETE_COLOR);
         deleteButton.addActionListener(e -> deleteDesign(design));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(new Color(80, 80, 110));
+        buttonPanel.setBackground(CARD_BACKGROUND);
         buttonPanel.add(openButton);
         buttonPanel.add(deleteButton);
         infoPanel.add(buttonPanel, BorderLayout.EAST);
@@ -128,6 +156,35 @@ public class MyDesignsPanel extends JPanel {
         card.add(infoPanel, BorderLayout.SOUTH);
 
         return card;
+    }
+
+    private JButton createStyledButton(String text, Color color) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(color.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(BUTTON_HOVER);
+                } else {
+                    g2d.setColor(color);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setFont(new Font("Montserrat", Font.BOLD, 12));
+        button.setForeground(TEXT_COLOR);
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        
+        return button;
     }
 
     private void openDesign(Design design) {

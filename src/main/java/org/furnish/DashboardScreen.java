@@ -38,6 +38,7 @@ public class DashboardScreen extends JFrame {
     private static final Color SIDEBAR_COLOR = new Color(30, 30, 50);
     private static final Color MENU_HOVER = new Color(52, 73, 94);
     private static final Color MENU_SELECTED = new Color(41, 128, 185);
+    private static final Color MENU_ICON_COLOR = new Color(189, 195, 199);
 
     private JPanel mainPanel;
     private CardLayout cardLayout;
@@ -112,24 +113,34 @@ public class DashboardScreen extends JFrame {
         sidebar.setBorder(BorderFactory.createEmptyBorder(30, 20, 30, 20));
         sidebar.setPreferredSize(new Dimension(250, 0));
 
-        // Sidebar header
-        JLabel sidebarTitle = new JLabel("Furnish Studio");
-        sidebarTitle.setFont(new Font("Montserrat", Font.BOLD, 20));
-        sidebarTitle.setForeground(TEXT_COLOR);
-        sidebarTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sidebarTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
-        sidebar.add(sidebarTitle);
+        // Sidebar header with logo
+        JPanel headerPanel = new JPanel();
+        headerPanel.setOpaque(false);
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
+        headerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
 
+        JLabel logoLabel = new JLabel("Furnish Studio");
+        logoLabel.setFont(new Font("Montserrat", Font.BOLD, 20));
+        logoLabel.setForeground(TEXT_COLOR);
+        headerPanel.add(logoLabel);
+        headerPanel.add(Box.createHorizontalGlue());
+        sidebar.add(headerPanel);
+
+        // Menu items with icons
         String[] menuItems = {"Room Designer", "Furniture Catalog", "My Designs", "Profile"};
-        for (String item : menuItems) {
-            JButton menuButton = createMenuButton(item);
+        String[] menuIcons = {"🏠", "🪑", "📁", "👤"}; // Using emoji as icons for simplicity
+        
+        for (int idx = 0; idx < menuItems.length; idx++) {
+            final int i = idx;
+            JButton menuButton = createMenuButton(menuItems[i], menuIcons[i]);
             menuButton.addActionListener(e -> {
                 if (selectedMenuButton != null) {
                     selectedMenuButton.setBackground(SIDEBAR_COLOR);
                 }
                 menuButton.setBackground(MENU_SELECTED);
                 selectedMenuButton = menuButton;
-                switchPanel(item);
+                switchPanel(menuItems[i]);
             });
             sidebar.add(menuButton);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -163,17 +174,30 @@ public class DashboardScreen extends JFrame {
         }
     }
 
-    private JButton createMenuButton(String text) {
-        JButton button = new JButton(text) {
+    private JButton createMenuButton(String text, String icon) {
+        JButton button = new JButton() {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Draw background
                 g2d.setColor(getBackground());
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                super.paintComponent(g);
+                
+                // Draw icon
+                g2d.setColor(MENU_ICON_COLOR);
+                g2d.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
+                g2d.drawString(icon, 15, getHeight() / 2 + 5);
+                
+                // Draw text
+                g2d.setColor(TEXT_COLOR);
+                g2d.setFont(new Font("Montserrat", Font.PLAIN, 14));
+                g2d.drawString(text, 45, getHeight() / 2 + 5);
             }
         };
+        
         button.setFont(new Font("Montserrat", Font.PLAIN, 14));
         button.setForeground(TEXT_COLOR);
         button.setBackground(SIDEBAR_COLOR);
