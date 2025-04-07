@@ -5,9 +5,12 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +27,23 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
 public class FurnitureCatalogPanel extends JPanel {
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
+    private static final Color BACKGROUND_COLOR = new Color(60, 60, 90);
+    private static final Color TABLE_BACKGROUND = new Color(70, 70, 100);
+    private static final Color TABLE_HEADER_COLOR = new Color(50, 50, 80);
+    private static final Color TABLE_SELECTION_COLOR = new Color(41, 128, 185);
+    private static final Color TEXT_COLOR = new Color(236, 240, 241);
+    private static final Color BUTTON_ADD_COLOR = new Color(46, 204, 113);
+    private static final Color BUTTON_EDIT_COLOR = new Color(241, 196, 15);
+    private static final Color BUTTON_DELETE_COLOR = new Color(231, 76, 60);
+    private static final Color BUTTON_HOVER = new Color(52, 73, 94);
+
     private DefaultTableModel tableModel;
     private JTable furnitureTable;
     private List<FurnitureItem> furnitureItems;
@@ -48,15 +66,34 @@ public class FurnitureCatalogPanel extends JPanel {
             }
         };
 
-        // Create table
-        furnitureTable = new JTable(tableModel);
+        // Create table with custom styling
+        furnitureTable = new JTable(tableModel) {
+            @Override
+            public JTableHeader getTableHeader() {
+                JTableHeader header = super.getTableHeader();
+                header.setDefaultRenderer(new HeaderRenderer());
+                return header;
+            }
+        };
+        
         furnitureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         furnitureTable.getTableHeader().setReorderingAllowed(false);
-        furnitureTable.setBackground(new Color(240, 240, 245));
-        furnitureTable.setForeground(new Color(60, 60, 60));
+        furnitureTable.setBackground(TABLE_BACKGROUND);
+        furnitureTable.setForeground(TEXT_COLOR);
         furnitureTable.setFont(new Font("Montserrat", Font.PLAIN, 12));
-        furnitureTable.getTableHeader().setFont(new Font("Montserrat", Font.BOLD, 12));
-        furnitureTable.setRowHeight(30);
+        furnitureTable.setRowHeight(40);
+        furnitureTable.setShowGrid(false);
+        furnitureTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        furnitureTable.setSelectionBackground(TABLE_SELECTION_COLOR);
+        furnitureTable.setSelectionForeground(TEXT_COLOR);
+        
+        // Set column widths
+        TableColumnModel columnModel = furnitureTable.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(150); // Name
+        columnModel.getColumn(1).setPreferredWidth(100); // Type
+        columnModel.getColumn(2).setPreferredWidth(120); // Dimensions
+        columnModel.getColumn(3).setPreferredWidth(100); // Price
+        columnModel.getColumn(4).setPreferredWidth(100); // Color
 
         // Create scroll pane for table
         JScrollPane scrollPane = new JScrollPane(furnitureTable);
@@ -67,12 +104,12 @@ public class FurnitureCatalogPanel extends JPanel {
         // Create button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setOpaque(false);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        // Create buttons
-        addButton = createButton("Add Furniture", new Color(92, 184, 92));
-        editButton = createButton("Edit", new Color(240, 173, 78));
-        deleteButton = createButton("Delete", new Color(217, 83, 79));
+        // Create buttons with custom styling
+        addButton = createStyledButton("Add Furniture", BUTTON_ADD_COLOR);
+        editButton = createStyledButton("Edit", BUTTON_EDIT_COLOR);
+        deleteButton = createStyledButton("Delete", BUTTON_DELETE_COLOR);
 
         // Add action listeners
         addButton.addActionListener(e -> showAddEditDialog(null));
@@ -110,16 +147,54 @@ public class FurnitureCatalogPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    private JButton createButton(String text, Color color) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Montserrat", Font.BOLD, 12));
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
+    private JButton createStyledButton(String text, Color color) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(color.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(BUTTON_HOVER);
+                } else {
+                    g2d.setColor(color);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setFont(new Font("Montserrat", Font.BOLD, 14));
+        button.setForeground(TEXT_COLOR);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setContentAreaFilled(false);
         button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setOpaque(true);
-        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        
         return button;
+    }
+
+    private class HeaderRenderer implements TableCellRenderer {
+        private JLabel label;
+        
+        public HeaderRenderer() {
+            label = new JLabel();
+            label.setOpaque(true);
+            label.setBackground(TABLE_HEADER_COLOR);
+            label.setForeground(TEXT_COLOR);
+            label.setFont(new Font("Montserrat", Font.BOLD, 12));
+            label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            label.setHorizontalAlignment(JLabel.CENTER);
+        }
+        
+        @Override
+        public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            label.setText(value.toString());
+            return label;
+        }
     }
 
     private void loadFurnitureItems() {
@@ -201,8 +276,8 @@ public class FurnitureCatalogPanel extends JPanel {
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
-        JButton saveButton = createButton("Save", new Color(92, 184, 92));
-        JButton cancelButton = createButton("Cancel", new Color(217, 83, 79));
+        JButton saveButton = createStyledButton("Save", BUTTON_ADD_COLOR);
+        JButton cancelButton = createStyledButton("Cancel", BUTTON_DELETE_COLOR);
 
         saveButton.addActionListener(e -> {
             try {

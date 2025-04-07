@@ -13,7 +13,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +23,21 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.plaf.basic.BasicComboBoxUI;
 
 public class RoomDesignerPanel extends JPanel {
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
+    private static final Color BACKGROUND_COLOR = new Color(60, 60, 90);
+    private static final Color TOOLBAR_COLOR = new Color(42, 42, 74);
+    private static final Color BUTTON_COLOR = new Color(46, 204, 113);
+    private static final Color BUTTON_HOVER = new Color(39, 174, 96);
+    private static final Color TEXT_COLOR = new Color(236, 240, 241);
+    private static final Color GRID_COLOR = new Color(100, 100, 130);
+    private static final Color ROOM_COLOR = new Color(80, 80, 110);
+    private static final Color FURNITURE_COLOR = new Color(52, 152, 219);
+    private static final Color SELECTED_COLOR = new Color(241, 196, 15);
+
     private List<FurnitureItem> furnitureItems;
     private FurnitureItem selectedItem;
     private Point dragStart;
@@ -38,7 +51,7 @@ public class RoomDesignerPanel extends JPanel {
 
     public RoomDesignerPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(60, 60, 90));
+        setBackground(BACKGROUND_COLOR);
         
         // Initialize room and furniture items
         room = new Room(800, 600);
@@ -54,32 +67,65 @@ public class RoomDesignerPanel extends JPanel {
     
     private JPanel createToolbar() {
         JPanel toolbar = new JPanel();
-        toolbar.setBackground(new Color(42, 42, 74));
-        toolbar.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        toolbar.setBackground(TOOLBAR_COLOR);
+        toolbar.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         
         String[] furnitureTypes = {"Sofa", "Table", "Chair", "Bed", "Wardrobe", "Bookshelf"};
         furnitureTypeCombo = new JComboBox<>(furnitureTypes);
         furnitureTypeCombo.setFont(new Font("Montserrat", Font.PLAIN, 14));
+        furnitureTypeCombo.setBackground(new Color(60, 60, 90));
+        furnitureTypeCombo.setForeground(TEXT_COLOR);
+        furnitureTypeCombo.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        furnitureTypeCombo.setUI(new BasicComboBoxUI() {
+            @Override
+            protected void installDefaults() {
+                super.installDefaults();
+                comboBox.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+            }
+        });
         
-        addFurnitureButton = new JButton("Add Furniture");
-        addFurnitureButton.setFont(new Font("Montserrat", Font.BOLD, 14));
-        addFurnitureButton.setBackground(new Color(92, 184, 92));
-        addFurnitureButton.setForeground(Color.WHITE);
+        addFurnitureButton = createStyledButton("Add Furniture");
         addFurnitureButton.addActionListener(e -> addFurniture());
         
-        saveDesignButton = new JButton("Save Design");
-        saveDesignButton.setFont(new Font("Montserrat", Font.BOLD, 14));
-        saveDesignButton.setBackground(new Color(92, 184, 92));
-        saveDesignButton.setForeground(Color.WHITE);
+        saveDesignButton = createStyledButton("Save Design");
         saveDesignButton.addActionListener(e -> saveDesign());
         
         toolbar.add(furnitureTypeCombo);
-        toolbar.add(Box.createHorizontalStrut(10));
+        toolbar.add(Box.createHorizontalStrut(15));
         toolbar.add(addFurnitureButton);
-        toolbar.add(Box.createHorizontalStrut(10));
+        toolbar.add(Box.createHorizontalStrut(15));
         toolbar.add(saveDesignButton);
         
         return toolbar;
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(BUTTON_HOVER.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(BUTTON_HOVER);
+                } else {
+                    g2d.setColor(BUTTON_COLOR);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setFont(new Font("Montserrat", Font.BOLD, 14));
+        button.setForeground(TEXT_COLOR);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        
+        return button;
     }
     
     private void addMouseListeners() {
@@ -204,6 +250,7 @@ public class RoomDesignerPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         
         // Save original transform
         AffineTransform originalTransform = g2d.getTransform();
@@ -229,9 +276,16 @@ public class RoomDesignerPanel extends JPanel {
     
     private void drawZoomIndicator(Graphics2D g2d) {
         String zoomText = String.format("%d%%", (int)(zoomFactor * 100));
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(TEXT_COLOR);
         g2d.setFont(new Font("Montserrat", Font.BOLD, 14));
-        g2d.drawString(zoomText, 10, 20);
+        
+        // Draw background
+        g2d.setColor(new Color(0, 0, 0, 100));
+        g2d.fillRoundRect(10, 10, 60, 30, 8, 8);
+        
+        // Draw text
+        g2d.setColor(TEXT_COLOR);
+        g2d.drawString(zoomText, 20, 30);
     }
     
     private class Room {
@@ -244,15 +298,17 @@ public class RoomDesignerPanel extends JPanel {
         }
         
         public void draw(Graphics2D g2d) {
-            g2d.setColor(new Color(80, 80, 110));
-            g2d.fillRect(50, 50, width, height);
+            // Draw room background
+            g2d.setColor(ROOM_COLOR);
+            g2d.fillRoundRect(50, 50, width, height, 20, 20);
             
             // Draw grid
-            g2d.setColor(new Color(100, 100, 130));
-            for (int x = 50; x <= width + 50; x += 50) {
+            g2d.setColor(GRID_COLOR);
+            int gridSize = 50;
+            for (int x = 50; x <= width + 50; x += gridSize) {
                 g2d.drawLine(x, 50, x, height + 50);
             }
-            for (int y = 50; y <= height + 50; y += 50) {
+            for (int y = 50; y <= height + 50; y += gridSize) {
                 g2d.drawLine(50, y, width + 50, y);
             }
         }
@@ -269,8 +325,6 @@ public class RoomDesignerPanel extends JPanel {
             this.type = type;
             this.width = width;
             this.height = height;
-            this.x = 100;
-            this.y = 100;
         }
         
         public void setPosition(int x, int y) {
@@ -284,16 +338,31 @@ public class RoomDesignerPanel extends JPanel {
         }
         
         public boolean contains(Point point) {
-            return new Rectangle2D.Float(x, y, width, height).contains(point);
+            return new RoundRectangle2D.Float(x, y, width, height, 10, 10).contains(point);
         }
         
         public void draw(Graphics2D g2d, boolean selected) {
-            g2d.setColor(selected ? new Color(92, 184, 92) : new Color(120, 120, 150));
-            g2d.fillRect(x, y, width, height);
+            // Draw furniture item
+            if (selected) {
+                g2d.setColor(SELECTED_COLOR);
+            } else {
+                g2d.setColor(FURNITURE_COLOR);
+            }
+            g2d.fillRoundRect(x, y, width, height, 10, 10);
             
-            g2d.setColor(Color.WHITE);
+            // Draw type label
+            g2d.setColor(TEXT_COLOR);
             g2d.setFont(new Font("Montserrat", Font.PLAIN, 12));
-            g2d.drawString(type, x + 5, y + 20);
+            String label = type;
+            int labelWidth = g2d.getFontMetrics().stringWidth(label);
+            g2d.drawString(label, x + (width - labelWidth) / 2, y + height / 2);
+            
+            // Draw selection border
+            if (selected) {
+                g2d.setColor(TEXT_COLOR);
+                g2d.setStroke(new java.awt.BasicStroke(2));
+                g2d.drawRoundRect(x, y, width, height, 10, 10);
+            }
         }
     }
 } 
