@@ -116,6 +116,26 @@ public class FurnitureDesignApp extends JFrame {
 
         JButton closeButton = CloseButtonUtil.createCloseButton();
         styleControlButton(closeButton);
+        closeButton.addActionListener(e -> {
+            if (currentDesign != null && currentDesign.isModified()) {
+                int response = JOptionPane.showConfirmDialog(
+                    FurnitureDesignApp.this,
+                    "Do you want to save changes before closing?",
+                    "Unsaved Changes",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+                
+                if (response == JOptionPane.YES_OPTION) {
+                    saveDesign();
+                    System.exit(0);
+                } else if (response == JOptionPane.NO_OPTION) {
+                    System.exit(0);
+                }
+            } else {
+                System.exit(0);
+            }
+        });
         controlPanel.add(closeButton);
 
         topPanel.add(controlPanel, BorderLayout.EAST);
