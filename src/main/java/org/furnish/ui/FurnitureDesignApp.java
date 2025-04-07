@@ -3,9 +3,7 @@ package org.furnish.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -42,6 +40,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
+import org.furnish.DashboardScreen;
 import org.furnish.core.Design;
 import org.furnish.core.Furniture;
 import org.furnish.utils.CloseButtonUtil;
@@ -53,6 +52,8 @@ public class FurnitureDesignApp extends JFrame {
     private Furniture selectedFurniture;
     private JLabel statusLabel;
     private JToggleButton view2D3DToggle;
+    private JPanel mainPanel;
+    private JPanel contentPanel;
 
     public FurnitureDesignApp() {
         initializeModernUI();
@@ -70,78 +71,50 @@ public class FurnitureDesignApp extends JFrame {
         setUndecorated(true);
         setShape(new RoundRectangle2D.Double(0, 0, 1200, 850, 30, 30));
 
-        JPanel mainPanel = createMainPanel();
-        add(mainPanel);
-    }
-
-    private JPanel createMainPanel() {
-        JPanel mainPanel = new JPanel() {
+        // Main panel with gradient background
+        mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                GradientPaint gradient = new GradientPaint(
-                        0, 0, new Color(23, 23, 38),
-                        getWidth(), getHeight(), new Color(42, 42, 74));
+                GradientPaint gradient = new GradientPaint(0, 0, new Color(23, 23, 38), 0, getHeight(),
+                        new Color(42, 42, 74));
                 g2d.setPaint(gradient);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-
-                g2d.setColor(new Color(255, 255, 255, 15));
-                for (int i = 0; i < 5; i++) {
-                    g2d.fillOval(150 + i * 180, 50, 100, 100);
-                }
             }
         };
         mainPanel.setLayout(new BorderLayout());
+        add(mainPanel);
 
+        // Top panel with close button and dashboard shortcut
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
-        topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JLabel titleLabel = new JLabel("Furnish Studio");
-        titleLabel.setFont(new Font("Montserrat", Font.BOLD, 20));
-        titleLabel.setForeground(Color.WHITE);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
-        topPanel.add(titleLabel, BorderLayout.WEST);
-
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        controlPanel.setOpaque(false);
-
-        JButton minimizeButton = new JButton("—");
-        styleControlButton(minimizeButton);
-        minimizeButton.addActionListener(e -> setState(Frame.ICONIFIED));
-        controlPanel.add(minimizeButton);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         JButton closeButton = CloseButtonUtil.createCloseButton();
-        styleControlButton(closeButton);
-        closeButton.addActionListener(e -> {
-            if (currentDesign != null && currentDesign.isModified()) {
-                int response = JOptionPane.showConfirmDialog(
-                    FurnitureDesignApp.this,
-                    "Do you want to save changes before closing?",
-                    "Unsaved Changes",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                );
-                
-                if (response == JOptionPane.YES_OPTION) {
-                    saveDesign();
-                    System.exit(0);
-                } else if (response == JOptionPane.NO_OPTION) {
-                    System.exit(0);
-                }
-            } else {
-                System.exit(0);
-            }
-        });
-        controlPanel.add(closeButton);
+        topPanel.add(closeButton, BorderLayout.EAST);
 
-        topPanel.add(controlPanel, BorderLayout.EAST);
+        // Add dashboard shortcut button
+        JButton dashboardButton = new JButton("Go to Dashboard");
+        dashboardButton.setFont(new Font("Montserrat", Font.BOLD, 14));
+        dashboardButton.setBackground(new Color(92, 184, 92));
+        dashboardButton.setForeground(Color.WHITE);
+        dashboardButton.setFocusPainted(false);
+        dashboardButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        dashboardButton.addActionListener(e -> {
+            new DashboardScreen().setVisible(true);
+            dispose();
+        });
+        topPanel.add(dashboardButton, BorderLayout.WEST);
+
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
-        return mainPanel;
+        // Content area
+        contentPanel = new JPanel();
+        contentPanel.setOpaque(false);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
     }
 
     private void styleControlButton(JButton button) {
@@ -177,6 +150,10 @@ public class FurnitureDesignApp extends JFrame {
                 createStyledMenuItem("Open Design", "../images/close.png", e -> openDesign()),
                 createStyledMenuItem("Save Design", "../images/close.png", e -> saveDesign()),
                 new JSeparator(),
+                createStyledMenuItem("Go to Dashboard", "../images/close.png", e -> {
+                    new DashboardScreen().setVisible(true);
+                    dispose();
+                }),
                 createStyledMenuItem("Exit", "../images/close.png", e -> dispose()));
 
         JMenu editMenu = createStyledMenu("Edit");
