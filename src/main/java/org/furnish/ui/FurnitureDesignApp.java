@@ -1,12 +1,51 @@
 package org.furnish.ui;
 
-import org.furnish.core.*;
-import org.furnish.utils.CloseButtonUtil;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+
+import org.furnish.core.Design;
+import org.furnish.core.Furniture;
+import org.furnish.utils.CloseButtonUtil;
 
 public class FurnitureDesignApp extends JFrame {
     private VisualizationPanel visualizationPanel;
@@ -130,10 +169,7 @@ public class FurnitureDesignApp extends JFrame {
 
         JMenu viewMenu = createStyledMenu("View");
         addMenuItems(viewMenu,
-                createStyledMenuItem("Zoom In", "../images/close.png", e -> visualizationPanel.zoomIn()),
-                createStyledMenuItem("Zoom Out", "../images/close.png", e -> visualizationPanel.zoomOut()),
-                new JSeparator(),
-                createStyledMenuItem("Reset View", "../images/close.png", e -> visualizationPanel.resetView()));
+                createStyledMenuItem("2D/3D Toggle", "../images/close.png", e -> toggle2D3DView()));
 
         JMenu furnitureMenu = createStyledMenu("Furniture");
         addMenuItems(furnitureMenu,
@@ -231,14 +267,6 @@ public class FurnitureDesignApp extends JFrame {
                     is3D ? "images/3d.png" : "images/2d.png")));
         });
         toolBar.add(view2D3DToggle);
-
-        JButton zoomInButton = createToolbarButton("Zoom In", "../images/close.png");
-        zoomInButton.addActionListener(e -> visualizationPanel.zoomIn());
-        toolBar.add(zoomInButton);
-
-        JButton zoomOutButton = createToolbarButton("Zoom Out", "../images/close.png");
-        zoomOutButton.addActionListener(e -> visualizationPanel.zoomOut());
-        toolBar.add(zoomOutButton);
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
     }
@@ -450,6 +478,13 @@ public class FurnitureDesignApp extends JFrame {
                 menu.add(item);
             }
         }
+    }
+
+    private void toggle2D3DView() {
+        boolean is3D = view2D3DToggle.isSelected();
+        view2D3DToggle.setSelected(!is3D);
+        visualizationPanel.set3DView(!is3D);
+        view2D3DToggle.setText(!is3D ? "3D View" : "2D View");
     }
 
     public static void main(String[] args) {
