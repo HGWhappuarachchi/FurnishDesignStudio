@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.furnish.ui.MyDesignsPanel;
 import org.furnish.ui.RoomDesignerPanel;
 import org.furnish.utils.CloseButtonUtil;
 
@@ -154,9 +155,8 @@ public class DashboardScreen extends JFrame {
         title.setForeground(Color.WHITE);
         panel.add(title, BorderLayout.NORTH);
         
-        // Add saved designs components here
-        JPanel designsPanel = new JPanel();
-        designsPanel.setOpaque(false);
+        // Add my designs panel
+        MyDesignsPanel designsPanel = new MyDesignsPanel();
         panel.add(designsPanel, BorderLayout.CENTER);
         
         return panel;
