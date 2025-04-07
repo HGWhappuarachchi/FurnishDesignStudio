@@ -21,6 +21,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.furnish.ui.FurnitureCatalogPanel;
 import org.furnish.ui.MyDesignsPanel;
 import org.furnish.ui.RoomDesignerPanel;
 import org.furnish.utils.CloseButtonUtil;
@@ -128,18 +129,17 @@ public class DashboardScreen extends JFrame {
     }
 
     private JPanel createFurnitureCatalogPanel() {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setLayout(new BorderLayout());
         
         JLabel title = new JLabel("Furniture Catalog", SwingConstants.CENTER);
         title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(new Color(60, 60, 60));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panel.add(title, BorderLayout.NORTH);
         
-        // Add furniture catalog components here
-        JPanel catalogPanel = new JPanel();
-        catalogPanel.setOpaque(false);
+        // Add furniture catalog panel
+        FurnitureCatalogPanel catalogPanel = new FurnitureCatalogPanel();
         panel.add(catalogPanel, BorderLayout.CENTER);
         
         return panel;
