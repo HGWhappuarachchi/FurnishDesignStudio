@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 
 import org.furnish.ui.FurnitureCatalogPanel;
 import org.furnish.ui.MyDesignsPanel;
+import org.furnish.ui.ProfilePanel;
 import org.furnish.ui.RoomDesignerPanel;
 import org.furnish.utils.CloseButtonUtil;
 
@@ -163,18 +164,17 @@ public class DashboardScreen extends JFrame {
     }
 
     private JPanel createProfilePanel() {
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setLayout(new BorderLayout());
         
-        JLabel title = new JLabel("Profile", SwingConstants.CENTER);
+        JLabel title = new JLabel("User Management", SwingConstants.CENTER);
         title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(new Color(60, 60, 60));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panel.add(title, BorderLayout.NORTH);
         
-        // Add profile components here
-        JPanel profilePanel = new JPanel();
-        profilePanel.setOpaque(false);
+        // Add profile panel
+        ProfilePanel profilePanel = new ProfilePanel();
         panel.add(profilePanel, BorderLayout.CENTER);
         
         return panel;
