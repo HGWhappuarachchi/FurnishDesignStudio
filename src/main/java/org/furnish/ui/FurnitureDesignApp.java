@@ -24,7 +24,6 @@ import java.io.ObjectOutputStream;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -201,15 +200,6 @@ public class FurnitureDesignApp extends JFrame {
         item.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
         item.addActionListener(action);
 
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
-            if (icon.getImage() != null) {
-                item.setIcon(icon);
-            }
-        } catch (Exception e) {
-            System.out.println("Icon not found: " + iconPath);
-        }
-
         item.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 item.setBackground(new Color(80, 80, 110));
@@ -229,57 +219,48 @@ public class FurnitureDesignApp extends JFrame {
         toolBar.setBackground(new Color(40, 40, 60));
         toolBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        JButton newButton = createToolbarButton("New", "../images/close.png");
+        JButton newButton = createToolbarButton("New");
         newButton.addActionListener(e -> newDesign());
         toolBar.add(newButton);
 
-        JButton openButton = createToolbarButton("Open", "../images/close.png");
+        JButton openButton = createToolbarButton("Open");
         openButton.addActionListener(e -> openDesign());
         toolBar.add(openButton);
 
-        JButton saveButton = createToolbarButton("Save", "../images/close.png");
+        JButton saveButton = createToolbarButton("Save");
         saveButton.addActionListener(e -> saveDesign());
         toolBar.add(saveButton);
 
         toolBar.addSeparator();
 
-        JButton chairButton = createToolbarButton("Chair", "../images/close.png");
+        JButton chairButton = createToolbarButton("Chair");
         chairButton.addActionListener(e -> addFurniture("Chair"));
         toolBar.add(chairButton);
 
-        JButton tableButton = createToolbarButton("Table", "../images/close.png");
+        JButton tableButton = createToolbarButton("Table");
         tableButton.addActionListener(e -> addFurniture("Table"));
         toolBar.add(tableButton);
 
-        JButton sofaButton = createToolbarButton("Sofa", "../images/close.png");
+        JButton sofaButton = createToolbarButton("Sofa");
         sofaButton.addActionListener(e -> addFurniture("Sofa"));
         toolBar.add(sofaButton);
 
         toolBar.addSeparator();
 
-        view2D3DToggle = new JToggleButton("3D View", new ImageIcon(getClass().getResource("../images/close.png")));
+        view2D3DToggle = new JToggleButton("3D View");
         styleToolbarButton(view2D3DToggle);
         view2D3DToggle.addActionListener(e -> {
             boolean is3D = view2D3DToggle.isSelected();
             visualizationPanel.set3DView(is3D);
             view2D3DToggle.setText(is3D ? "3D View" : "2D View");
-            view2D3DToggle.setIcon(new ImageIcon(getClass().getResource(
-                    is3D ? "images/3d.png" : "images/2d.png")));
         });
         toolBar.add(view2D3DToggle);
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
     }
 
-    private JButton createToolbarButton(String tooltip, String iconPath) {
-        JButton button = new JButton();
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
-            button.setIcon(icon);
-        } catch (Exception e) {
-            System.out.println("Icon not found: " + iconPath);
-        }
-        button.setToolTipText(tooltip);
+    private JButton createToolbarButton(String text) {
+        JButton button = new JButton(text);
         styleToolbarButton(button);
         return button;
     }
