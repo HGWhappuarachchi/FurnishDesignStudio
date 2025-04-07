@@ -10,6 +10,8 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.BorderFactory;
@@ -28,9 +30,19 @@ import org.furnish.ui.RoomDesignerPanel;
 import org.furnish.utils.CloseButtonUtil;
 
 public class DashboardScreen extends JFrame {
+    private static final Color PRIMARY_COLOR = new Color(41, 128, 185);
+    private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
+    private static final Color BACKGROUND_COLOR = new Color(23, 23, 38);
+    private static final Color ACCENT_COLOR = new Color(46, 204, 113);
+    private static final Color TEXT_COLOR = new Color(236, 240, 241);
+    private static final Color SIDEBAR_COLOR = new Color(30, 30, 50);
+    private static final Color MENU_HOVER = new Color(52, 73, 94);
+    private static final Color MENU_SELECTED = new Color(41, 128, 185);
+
     private JPanel mainPanel;
     private CardLayout cardLayout;
     private JPanel contentPanel;
+    private JButton selectedMenuButton;
 
     public DashboardScreen() {
         setTitle("Furnish Studio - Dashboard");
@@ -47,8 +59,9 @@ public class DashboardScreen extends JFrame {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-                GradientPaint gradient = new GradientPaint(0, 0, new Color(23, 23, 38), 0, getHeight(),
+                GradientPaint gradient = new GradientPaint(0, 0, BACKGROUND_COLOR, 0, getHeight(),
                         new Color(42, 42, 74));
                 g2d.setPaint(gradient);
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
@@ -60,37 +73,70 @@ public class DashboardScreen extends JFrame {
         // Top panel with close button and user info
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(15, 25, 15, 25));
 
         JButton closeButton = CloseButtonUtil.createCloseButton();
+        closeButton.setBackground(new Color(255, 255, 255, 0));
+        closeButton.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        closeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                closeButton.setBackground(new Color(255, 255, 255, 20));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                closeButton.setBackground(new Color(255, 255, 255, 0));
+            }
+        });
         topPanel.add(closeButton, BorderLayout.EAST);
 
         JLabel userLabel = new JLabel("Welcome, User");
-        userLabel.setFont(new Font("Montserrat", Font.BOLD, 16));
-        userLabel.setForeground(Color.WHITE);
+        userLabel.setFont(new Font("Montserrat", Font.BOLD, 18));
+        userLabel.setForeground(TEXT_COLOR);
         topPanel.add(userLabel, BorderLayout.WEST);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
         // Sidebar with navigation
-        JPanel sidebar = new JPanel();
-        sidebar.setOpaque(false);
+        JPanel sidebar = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(SIDEBAR_COLOR);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(30, 20, 30, 20));
         sidebar.setPreferredSize(new Dimension(250, 0));
+
+        // Sidebar header
+        JLabel sidebarTitle = new JLabel("Furnish Studio");
+        sidebarTitle.setFont(new Font("Montserrat", Font.BOLD, 20));
+        sidebarTitle.setForeground(TEXT_COLOR);
+        sidebarTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sidebarTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
+        sidebar.add(sidebarTitle);
 
         String[] menuItems = {"Room Designer", "Furniture Catalog", "My Designs", "Profile"};
         for (String item : menuItems) {
-            JButton menuButton = new RoundedButton(item);
-            menuButton.setFont(new Font("Montserrat", Font.PLAIN, 14));
-            menuButton.setBackground(new Color(92, 184, 92));
-            menuButton.setForeground(Color.WHITE);
-            menuButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-            menuButton.setMaximumSize(new Dimension(200, 40));
-            menuButton.addActionListener(e -> switchPanel(item));
+            JButton menuButton = createMenuButton(item);
+            menuButton.addActionListener(e -> {
+                if (selectedMenuButton != null) {
+                    selectedMenuButton.setBackground(SIDEBAR_COLOR);
+                }
+                menuButton.setBackground(MENU_SELECTED);
+                selectedMenuButton = menuButton;
+                switchPanel(item);
+            });
             sidebar.add(menuButton);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
         }
+
+        // Add some spacing at the bottom
+        sidebar.add(Box.createVerticalGlue());
 
         mainPanel.add(sidebar, BorderLayout.WEST);
 
@@ -98,14 +144,62 @@ public class DashboardScreen extends JFrame {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
         contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Add different panels
+        // Initialize panels
         contentPanel.add(createRoomDesignerPanel(), "Room Designer");
         contentPanel.add(createFurnitureCatalogPanel(), "Furniture Catalog");
         contentPanel.add(createMyDesignsPanel(), "My Designs");
         contentPanel.add(createProfilePanel(), "Profile");
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // Select first menu item by default
+        if (sidebar.getComponentCount() > 1) {
+            JButton firstButton = (JButton) sidebar.getComponent(1);
+            firstButton.setBackground(MENU_SELECTED);
+            selectedMenuButton = firstButton;
+            switchPanel("Room Designer");
+        }
+    }
+
+    private JButton createMenuButton(String text) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(getBackground());
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g);
+            }
+        };
+        button.setFont(new Font("Montserrat", Font.PLAIN, 14));
+        button.setForeground(TEXT_COLOR);
+        button.setBackground(SIDEBAR_COLOR);
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.setMaximumSize(new Dimension(200, 45));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setContentAreaFilled(false);
+        button.setFocusPainted(false);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (button != selectedMenuButton) {
+                    button.setBackground(MENU_HOVER);
+                }
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (button != selectedMenuButton) {
+                    button.setBackground(SIDEBAR_COLOR);
+                }
+            }
+        });
+
+        return button;
     }
 
     private void switchPanel(String panelName) {
@@ -135,7 +229,7 @@ public class DashboardScreen extends JFrame {
         
         JLabel title = new JLabel("Furniture Catalog", SwingConstants.CENTER);
         title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(new Color(60, 60, 60));
+        title.setForeground(TEXT_COLOR);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panel.add(title, BorderLayout.NORTH);
         
@@ -151,11 +245,6 @@ public class DashboardScreen extends JFrame {
         panel.setOpaque(false);
         panel.setLayout(new BorderLayout());
         
-        JLabel title = new JLabel("My Designs", SwingConstants.CENTER);
-        title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
-        panel.add(title, BorderLayout.NORTH);
-        
         // Add my designs panel
         MyDesignsPanel designsPanel = new MyDesignsPanel();
         panel.add(designsPanel, BorderLayout.CENTER);
@@ -169,7 +258,7 @@ public class DashboardScreen extends JFrame {
         
         JLabel title = new JLabel("User Management", SwingConstants.CENTER);
         title.setFont(new Font("Montserrat", Font.BOLD, 24));
-        title.setForeground(new Color(60, 60, 60));
+        title.setForeground(TEXT_COLOR);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panel.add(title, BorderLayout.NORTH);
         
@@ -178,31 +267,5 @@ public class DashboardScreen extends JFrame {
         panel.add(profilePanel, BorderLayout.CENTER);
         
         return panel;
-    }
-
-    // Custom rounded button class
-    class RoundedButton extends JButton {
-        public RoundedButton(String text) {
-            super(text);
-            setContentAreaFilled(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            if (getModel().isPressed()) {
-                g2.setColor(getBackground().darker());
-            } else if (getModel().isRollover()) {
-                g2.setColor(getBackground().brighter());
-            } else {
-                g2.setColor(getBackground());
-            }
-
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 25, 25);
-            g2.dispose();
-            super.paintComponent(g);
-        }
     }
 } 
