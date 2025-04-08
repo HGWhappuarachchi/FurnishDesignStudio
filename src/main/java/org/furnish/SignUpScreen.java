@@ -13,6 +13,8 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -98,7 +100,21 @@ public class SignUpScreen extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
 
         // Logo
-        ImageIcon logoIcon = new ImageIcon(getClass().getResource("./images/sofa.png"));
+//        ImageIcon logoIcon = new ImageIcon(getClass().getResource("./images/sofa.png"));
+
+        ImageIcon logoIcon = null;
+        URL imageUrl = getClass().getResource("/images/sofa.png");
+
+        if (imageUrl != null) {
+            logoIcon = new ImageIcon(imageUrl);
+        } else {
+            // If image is not found, print an error and use a blank image (transparent)
+            System.err.println("Image not found!");
+
+            // Create a blank (transparent) 100x100 image
+            logoIcon = new ImageIcon(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+        }
+
         JLabel logo = new JLabel(logoIcon);
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 

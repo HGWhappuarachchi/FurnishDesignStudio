@@ -1,18 +1,13 @@
 package org.furnish;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -100,7 +95,21 @@ public class LoginScreen extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
         // Logo
-        ImageIcon logoIcon = new ImageIcon(getClass().getResource("./images/sofa.png"));
+//        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/images/sofa.png"));
+
+        ImageIcon logoIcon = null;
+        URL imageUrl = getClass().getResource("/images/sofa.png");
+
+        if (imageUrl != null) {
+            logoIcon = new ImageIcon(imageUrl);
+        } else {
+            // If image is not found, print an error and use a blank image (transparent)
+            System.err.println("Image not found!");
+
+            // Create a blank (transparent) 100x100 image
+            logoIcon = new ImageIcon(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+        }
+
         JLabel logo = new JLabel(logoIcon);
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -159,7 +168,7 @@ public class LoginScreen extends JFrame {
         forgotPassword.setForeground(new Color(189, 195, 199));
         forgotPassword.setAlignmentX(Component.CENTER_ALIGNMENT);
         forgotPassword.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
-        forgotPassword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        forgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
         forgotPassword.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -207,16 +216,16 @@ public class LoginScreen extends JFrame {
         textField.setBackground(INPUT_BACKGROUND);
         textField.setCaretColor(TEXT_COLOR);
 
-        textField.addFocusListener(new java.awt.event.FocusAdapter() {
+        textField.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
+            public void focusGained(FocusEvent evt) {
                 textField.setBorder(new CompoundBorder(
                     new LineBorder(PRIMARY_COLOR, 1, true),
                     new EmptyBorder(10, 15, 10, 15)
                 ));
             }
             @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
+            public void focusLost(FocusEvent evt) {
                 textField.setBorder(new CompoundBorder(
                     new LineBorder(INPUT_BORDER, 1, true),
                     new EmptyBorder(10, 15, 10, 15)
@@ -241,15 +250,15 @@ public class LoginScreen extends JFrame {
         passwordField.setEchoChar((char) 0);
         passwordField.setText(placeholder);
 
-        passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
+        passwordField.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent evt) {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
                     passwordField.setEchoChar('•');
                 }
             }
 
-            public void focusLost(java.awt.event.FocusEvent evt) {
+            public void focusLost(FocusEvent evt) {
                 if (passwordField.getPassword().length == 0) {
                     passwordField.setEchoChar((char) 0);
                     passwordField.setText(placeholder);

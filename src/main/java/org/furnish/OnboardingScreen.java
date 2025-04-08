@@ -8,6 +8,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.net.URL;
 
 public class OnboardingScreen extends JFrame {
     public OnboardingScreen() {
@@ -54,7 +56,21 @@ public class OnboardingScreen extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
 
         // App logo
-        ImageIcon logoIcon = new ImageIcon(getClass().getResource("./images/sofa.png"));
+//        ImageIcon logoIcon = new ImageIcon(getClass().getResource("/images/sofa.png"));
+
+        ImageIcon logoIcon = null;
+        URL imageUrl = getClass().getResource("/images/sofa.png");
+
+        if (imageUrl != null) {
+            logoIcon = new ImageIcon(imageUrl);
+        } else {
+            // If image is not found, print an error and use a blank image (transparent)
+            System.err.println("Image not found!");
+
+            // Create a blank (transparent) 100x100 image
+            logoIcon = new ImageIcon(new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB));
+        }
+
         JLabel logo = new JLabel(logoIcon);
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -86,6 +102,24 @@ public class OnboardingScreen extends JFrame {
         getStartedButton.setFocusPainted(false);
         getStartedButton.setBorder(BorderFactory.createEmptyBorder(15, 40, 15, 40));
         getStartedButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        getStartedButton.addActionListener(e -> {
+//            Timer timer = new Timer(10, new ActionListener() {
+//                float opacity = 1f;
+//
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    opacity -= 0.05f;
+//                    if (opacity <= 0) {
+//                        ((Timer) e.getSource()).stop();
+//                        new LoginScreen().setVisible(true);
+//                        dispose();
+//                    }
+//                    setOpacity(opacity);
+//                }
+//            });
+//            timer.start();
+//        });
+
         getStartedButton.addActionListener(e -> {
             Timer timer = new Timer(10, new ActionListener() {
                 float opacity = 1f;
@@ -93,12 +127,22 @@ public class OnboardingScreen extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     opacity -= 0.05f;
+
+                    // Ensure opacity stays within the valid range [0.0f, 1.0f]
+                    if (opacity < 0.0f) opacity = 0.0f;  // Prevent negative opacity
+                    if (opacity > 1.0f) opacity = 1.0f;  // Prevent opacity above 1.0f
+
+                    // Update the opacity
+                    setOpacity(opacity);
+
+                    // If opacity has reached 0, stop the timer and switch to the LoginScreen
                     if (opacity <= 0) {
                         ((Timer) e.getSource()).stop();
-                        new LoginScreen().setVisible(true);
+                        SwingUtilities.invokeLater(() -> {
+                            new LoginScreen().setVisible(true);
+                        });
                         dispose();
                     }
-                    setOpacity(opacity);
                 }
             });
             timer.start();
