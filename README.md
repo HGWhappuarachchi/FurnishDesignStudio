@@ -3,9 +3,6 @@ Below is a `README.md` file written in Markdown format for your `FurnitureDesign
 ---
 
 # Furniture Design App
-
-![Java](https://img.shields.io/badge/Java-17-orange)
-
 ![Java](https://img.shields.io/badge/Java-22-orange)
 ![Swing](https://img.shields.io/badge/UI-Swing-blue)
 
@@ -23,7 +20,7 @@ The **Furniture Design App** is a Java-based desktop application built using the
 
 ## Prerequisites
 
-- **Java Development Kit (JDK)**: Version 17 or higher recommended.
+- **Java Development Kit (JDK)**: Version 20 or higher recommended.
 - **IDE**: Any Java-compatible IDE (e.g., IntelliJ IDEA, Eclipse) or a simple text editor with a command-line compiler.
 
 ## Installation
