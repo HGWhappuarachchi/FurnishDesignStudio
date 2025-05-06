@@ -1,43 +1,14 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import LoginModal from "./components/LoginModel";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
 function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const [showLogin, setShowLogin] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    console.log(`email: ${email} and password: ${password}`);
-    navigate("/design");
-
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowLogin(false);
-    }, 1500);
-  };
+  const { currentUser } = useAuth();
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans">
-      {showLogin && (
-        <LoginModal
-          setShowLogin={setShowLogin}
-          setEmail={setEmail}
-          setPassword={setPassword}
-          handleLogin={handleLogin}
-          isLoading={isLoading}
-          email={email}
-          password={password}
-        />
-      )}
-
       {/* Navigation */}
       <nav className="bg-white shadow-lg fixed w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,25 +53,47 @@ function HomePage() {
               >
                 Gallery
               </a>
-              <button
-                onClick={() => setShowLogin(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="currentColor"
-                  stroke="currentColor"
-                  viewBox="0 0 512 512"
+
+              {currentUser ? (
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"
-                  />
-                </svg>
-                Login
-              </button>
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"
+                    />
+                  </svg>
+                  Profile
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300 flex items-center gap-2"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    viewBox="0 0 512 512"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"
+                    />
+                  </svg>
+                  Login
+                </button>
+              )}
             </div>
 
             <div className="md:hidden flex items-center">
@@ -156,28 +149,47 @@ function HomePage() {
               >
                 Gallery
               </a>
-              <button
-                onClick={() => {
-                  setShowLogin(true);
-                  setIsMenuOpen(false);
-                }}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 flex items-center justify-center gap-2"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {currentUser ? (
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 flex items-center justify-center gap-2"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M11 16l-4-4m0 0l4-4m-4 4h14"
-                  />
-                </svg>
-                Designer Login
-              </button>
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z" />
+                  </svg>
+                  Profile
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    navigate("/login");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 flex items-center justify-center gap-2"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    viewBox="0 0 512 512"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"
+                    />
+                  </svg>
+                  Login
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -195,7 +207,7 @@ function HomePage() {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
-                to="/design" // Changed from href="#" to to="/design"
+                to="/design"
                 className="px-8 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
               >
                 Get Started
@@ -467,25 +479,41 @@ function HomePage() {
           <p className="mt-4 text-lg text-indigo-100">
             Create breathtaking furniture layouts that bring visions to life.
           </p>
-          <a
-            href="#"
-            className="mt-8 inline-flex items-center px-6 py-3 bg-white text-indigo-700 rounded-full hover:bg-indigo-50 transition-colors duration-300"
-          >
-            <svg
-              className="h-5 w-5 mr-2"
-              fill="currentColor"
-              stroke="currentColor"
-              viewBox="0 0 512 512"
+          {currentUser ? (
+            <Link
+              to="/profile"
+              className="mt-8 inline-flex items-center px-6 py-3 bg-white text-indigo-700 rounded-full hover:bg-indigo-50 transition-colors duration-300"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"
-              />
-            </svg>
-            Sign In as Designer
-          </a>
+              <svg
+                className="h-5 w-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z" />
+              </svg>
+              View Your Profile
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="mt-8 inline-flex items-center px-6 py-3 bg-white text-indigo-700 rounded-full hover:bg-indigo-50 transition-colors duration-300"
+            >
+              <svg
+                className="h-5 w-5 mr-2"
+                fill="currentColor"
+                stroke="currentColor"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"
+                />
+              </svg>
+              Sign In as Designer
+            </Link>
+          )}
         </div>
       </div>
       {/* Footer */}
