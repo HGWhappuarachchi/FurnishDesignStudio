@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Layer, Rect, Stage, Text, Transformer } from "react-konva";
 import { Link, useNavigate } from "react-router-dom";
-import { Stage, Layer, Rect, Text, Transformer } from "react-konva";
 import { furnitureCatalog } from "./FurnitureCatalog";
 
 // Predefined room templates
@@ -188,6 +188,10 @@ function RoomTestDesignPage() {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [designHistory, setDesignHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [designName, setDesignName] = useState("");
+  const [savedDesigns, setSavedDesigns] = useState([]);
+  const [showLoadModal, setShowLoadModal] = useState(false);
   const navigate = useNavigate();
   const stageRef = useRef(null);
   const transformerRef = useRef(null);
@@ -195,6 +199,18 @@ function RoomTestDesignPage() {
   // Scaling factors
   const scale = 10;
   const roomScale = 25;
+
+  // Load saved designs from localStorage on component mount
+  useEffect(() => {
+    const saved = localStorage.getItem("savedRoomDesigns");
+    if (saved) {
+      try {
+        setSavedDesigns(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved designs", e);
+      }
+    }
+  }, []);
 
   const TemplatesPopup = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -253,6 +269,112 @@ function RoomTestDesignPage() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+
+  const SaveDesignModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Save Design</h2>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Design Name
+          </label>
+          <input
+            type="text"
+            value={designName}
+            onChange={(e) => setDesignName(e.target.value)}
+            className="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="My Awesome Room"
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => setShowSaveModal(false)}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveDesign}
+            disabled={!designName.trim()}
+            className={`px-4 py-2 rounded-md ${
+              !designName.trim()
+                ? "bg-indigo-300 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            } text-white`}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const LoadDesignModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-2xl shadow-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Load Design</h2>
+          <button
+            onClick={() => setShowLoadModal(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        {savedDesigns.length === 0 ? (
+          <p className="text-gray-600">No saved designs found.</p>
+        ) : (
+          <div className="space-y-2">
+            {savedDesigns.map((design) => (
+              <div
+                key={design.id}
+                className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleLoadDesign(design)}
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-gray-900">{design.name}</h3>
+                  <span className="text-xs text-gray-500">
+                    {new Date(design.date).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  {design.data.dimensions.width}ft ×{" "}
+                  {design.data.dimensions.length}ft
+                </p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {design.data.furniture.slice(0, 3).map((item) => (
+                    <span
+                      key={item.id}
+                      className="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-700"
+                    >
+                      {item.name}
+                    </span>
+                  ))}
+                  {design.data.furniture.length > 3 && (
+                    <span className="px-2 py-1 bg-gray-100 text-xs rounded-full text-gray-700">
+                      +{design.data.furniture.length - 3} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -491,6 +613,66 @@ function RoomTestDesignPage() {
     }
   };
 
+  const handleSaveDesign = () => {
+    if (!designName.trim()) return;
+
+    const designData = {
+      id: Date.now().toString(),
+      name: designName.trim(),
+      date: new Date().toISOString(),
+      data: {
+        dimensions: {
+          width: parseFloat(dimensions.width),
+          length: parseFloat(dimensions.length),
+        },
+        wallColor,
+        floorColor,
+        floorType,
+        floorTexture,
+        furniture: furniture.map((item) => ({
+          ...item,
+          x: item.x / scale,
+          y: item.y / scale,
+          width: item.width / scale,
+          length: item.length / scale,
+        })),
+      },
+    };
+
+    const updatedDesigns = [
+      designData,
+      ...savedDesigns.filter((d) => d.id !== designData.id),
+    ].slice(0, 20); // Keep only the 20 most recent designs
+
+    localStorage.setItem("savedRoomDesigns", JSON.stringify(updatedDesigns));
+    setSavedDesigns(updatedDesigns);
+    setShowSaveModal(false);
+    setDesignName("");
+  };
+
+  const handleLoadDesign = (design) => {
+    const scaledFurniture = design.data.furniture.map((item) => ({
+      ...item,
+      x: item.x * scale,
+      y: item.y * scale,
+      width: item.width * scale,
+      length: item.length * scale,
+    }));
+
+    setDimensions({
+      width: design.data.dimensions.width.toString(),
+      length: design.data.dimensions.length.toString(),
+    });
+    setWallColor(design.data.wallColor);
+    setFloorColor(design.data.floorColor);
+    setFloorType(design.data.floorType);
+    setFloorTexture(design.data.floorTexture);
+    setFurniture(scaledFurniture);
+    setIsSubmitted(true);
+    setShowLoadModal(false);
+    setSelectedTemplate(null);
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 font-sans p-4 md:p-8">
       <header className="flex justify-between items-center mb-6 md:mb-8">
@@ -693,6 +875,8 @@ function RoomTestDesignPage() {
           </div>
         </div>
         {showTemplatesPopup && <TemplatesPopup />}
+        {showSaveModal && <SaveDesignModal />}
+        {showLoadModal && <LoadDesignModal />}
 
         {isSubmitted && (
           <div className="mt-6 md:mt-8">
@@ -740,6 +924,20 @@ function RoomTestDesignPage() {
                       )}
                     </div>
                   ))}
+                </div>
+                <div className="mt-4 space-y-2">
+                  <button
+                    onClick={() => setShowSaveModal(true)}
+                    className="w-full px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                  >
+                    Save Design
+                  </button>
+                  <button
+                    onClick={() => setShowLoadModal(true)}
+                    className="w-full px-3 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                  >
+                    Load Design
+                  </button>
                 </div>
               </div>
 
