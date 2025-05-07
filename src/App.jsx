@@ -1,6 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-
+import { DesignProvider } from "../src/pages/context/DesignContext";
 import Login from "./pages/components/Auth/Login";
 import Profile from "./pages/components/Auth/Profile";
 import Signup from "./pages/components/Auth/Signup";
@@ -32,7 +32,9 @@ function App() {
           path="/design"
           element={
             <ProtectedRoute>
-              <RoomDesignPage />
+              <DesignProvider>
+                <RoomDesignPage />
+              </DesignProvider>
             </ProtectedRoute>
           }
         />

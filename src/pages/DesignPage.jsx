@@ -2,6 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Stage, Layer, Rect, Text } from "react-konva";
 import { furnitureCatalog } from "./FurnitureCatalog";
+import { useAuth } from "../../src/pages/context/AuthContext";
+import { db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 // Predefined room templates
 const roomTemplates = [
@@ -125,31 +135,13 @@ const roomTemplates = [
     dimensions: { width: 20, length: 20 },
     defaultFurniture: [
       {
-        type: "single-chair",
-        name: "Single Chair",
+        type: "dining-table",
+        name: "Dining Table",
         x: 4,
         y: 4,
-        width: 6,
-        length: 4,
-        color: "#8B4513",
-      },
-      {
-        type: "single-bed",
-        name: "Single Bed",
-        x: 3,
-        y: 6,
-        width: 2,
-        length: 2,
-        color: "#8B4513",
-      },
-      {
-        type: "stool",
-        name: "Stool",
-        x: 9,
-        y: 6,
-        width: 2,
-        length: 2,
-        color: "#8B4513",
+        width: 10,
+        length: 10,
+        color: "#FFFFFF",
       },
     ],
     suggestedWallColor: "#f5f5f5",
@@ -169,6 +161,10 @@ function RoomDesignPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [furniture, setFurniture] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [designs, setDesigns] = useState([]);
+  const [selectedDesignId, setSelectedDesignId] = useState(null);
+  const [designName, setDesignName] = useState("");
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const stageRef = useRef(null);
 
@@ -189,6 +185,162 @@ function RoomDesignPage() {
       { name: "Hardwood Oak", path: "/textures/hardwood_oak.jpg" },
       { name: "Bamboo", path: "/textures/bamboo.jpg" },
     ],
+  };
+
+  // Sanitize email for Firestore path
+  const sanitizeEmail = (email) => {
+    return email.replace(/[@.]/g, "_");
+  };
+
+  // Fetch designs on mount or user change
+  useEffect(() => {
+    if (currentUser && currentUser.email) {
+      fetchDesigns();
+    } else {
+      setDesigns([]);
+    }
+  }, [currentUser]);
+
+  // Cleanup Konva stage
+  useEffect(() => {
+    return () => {
+      if (stageRef.current && stageRef.current.container()) {
+        stageRef.current.destroy();
+        stageRef.current = null;
+      }
+    };
+  }, []);
+
+  // Fetch designs from Firestore
+  const fetchDesigns = async () => {
+    if (!currentUser || !currentUser.email) return;
+    try {
+      const sanitizedEmail = sanitizeEmail(currentUser.email);
+      const designsCollection = collection(
+        db,
+        `designs/${sanitizedEmail}/userDesigns`
+      );
+      const snapshot = await getDocs(designsCollection);
+      const designsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDesigns(designsData);
+    } catch (error) {
+      console.error("Error fetching designs:", error);
+      alert("Failed to fetch designs.");
+    }
+  };
+
+  // Save or update design
+  const saveDesign = async () => {
+    if (!currentUser || !currentUser.email) {
+      alert("You must be logged in to save designs.");
+      return;
+    }
+    if (!designName) {
+      alert("Please enter a design name.");
+      return;
+    }
+
+    const designData = {
+      name: designName,
+      dimensions: {
+        width: parseFloat(dimensions.width),
+        length: parseFloat(dimensions.length),
+      },
+      wallColor,
+      floorColor,
+      floorType,
+      floorTexture,
+      furniture,
+      templateId: selectedTemplate,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const sanitizedEmail = sanitizeEmail(currentUser.email);
+      if (selectedDesignId) {
+        // Update existing design
+        const designRef = doc(
+          db,
+          `designs/${sanitizedEmail}/userDesigns`,
+          selectedDesignId
+        );
+        await updateDoc(designRef, designData);
+        alert("Design updated successfully!");
+      } else {
+        // Save new design
+        const designsCollection = collection(
+          db,
+          `designs/${sanitizedEmail}/userDesigns`
+        );
+        const docRef = await addDoc(designsCollection, designData);
+        setSelectedDesignId(docRef.id);
+        alert("Design saved successfully!");
+      }
+      fetchDesigns();
+    } catch (error) {
+      console.error("Error saving design:", error);
+      alert("Failed to save design.");
+    }
+  };
+
+  // Load a design
+  const loadDesign = (design) => {
+    setSelectedDesignId(design.id);
+    setDesignName(design.name);
+    setDimensions({
+      width: design.dimensions.width.toString(),
+      length: design.dimensions.length.toString(),
+    });
+    setWallColor(design.wallColor);
+    setFloorColor(design.floorColor);
+    setFloorType(design.floorType);
+    setFloorTexture(design.floorTexture);
+    setFurniture(design.furniture);
+    setSelectedTemplate(design.templateId);
+    setIsSubmitted(true);
+  };
+
+  // Delete a design
+  const deleteDesign = async (designId) => {
+    if (!currentUser || !currentUser.email) {
+      alert("You must be logged in to delete designs.");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to delete this design?")) return;
+    try {
+      const sanitizedEmail = sanitizeEmail(currentUser.email);
+      const designRef = doc(
+        db,
+        `designs/${sanitizedEmail}/userDesigns`,
+        designId
+      );
+      await deleteDoc(designRef);
+      alert("Design deleted successfully!");
+      fetchDesigns();
+      if (selectedDesignId === designId) {
+        resetDesign();
+      }
+    } catch (error) {
+      console.error("Error deleting design:", error);
+      alert("Failed to delete design.");
+    }
+  };
+
+  // Reset design state
+  const resetDesign = () => {
+    setSelectedDesignId(null);
+    setDesignName("");
+    setDimensions({ width: "", length: "" });
+    setWallColor("#ffffff");
+    setFloorColor("#ffffff");
+    setFloorType("tile");
+    setFloorTexture("");
+    setFurniture([]);
+    setSelectedTemplate(null);
+    setIsSubmitted(false);
   };
 
   const TemplatesPopup = () => (
@@ -251,15 +403,6 @@ function RoomDesignPage() {
       </div>
     </div>
   );
-
-  useEffect(() => {
-    return () => {
-      if (stageRef.current && stageRef.current.container()) {
-        stageRef.current.destroy();
-        stageRef.current = null;
-      }
-    };
-  }, []);
 
   const applyTemplate = (template) => {
     setSelectedTemplate(template.id);
@@ -417,7 +560,6 @@ function RoomDesignPage() {
             Furnish Studio
           </span>
         </div>
-
         <div className="flex gap-2">
           <Link
             to="/testDesign"
@@ -435,7 +577,56 @@ function RoomDesignPage() {
       </header>
 
       <div className="max-w-6xl mx-auto">
-        {/* Centered Customize Your Room Box */}
+        {/* Design Management */}
+        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Manage Designs
+          </h2>
+          <div className="flex gap-4 mb-4">
+            <input
+              type="text"
+              value={designName}
+              onChange={(e) => setDesignName(e.target.value)}
+              placeholder="Enter design name"
+              className="p-2 border rounded-md flex-1"
+            />
+            <button
+              onClick={saveDesign}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+            >
+              {selectedDesignId ? "Update Design" : "Save Design"}
+            </button>
+            <button
+              onClick={resetDesign}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
+            >
+              New Design
+            </button>
+          </div>
+          <div className="space-y-2">
+            {designs.map((design) => (
+              <div
+                key={design.id}
+                className="flex justify-between items-center p-2 bg-gray-50 rounded-lg"
+              >
+                <span
+                  className="cursor-pointer text-indigo-600 hover:text-indigo-800"
+                  onClick={() => loadDesign(design)}
+                >
+                  {design.name}
+                </span>
+                <button
+                  onClick={() => deleteDesign(design.id)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Customize Your Room */}
         <div className="flex justify-center">
           <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-2xl">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -490,7 +681,6 @@ function RoomDesignPage() {
                   </div>
                 </div>
               </div>
-
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Room Colors
@@ -528,7 +718,6 @@ function RoomDesignPage() {
                   </div>
                 </div>
               </div>
-
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Floor Type
@@ -575,7 +764,6 @@ function RoomDesignPage() {
                   </select>
                 </div>
               </div>
-
               <button
                 type="submit"
                 className="w-full px-6 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
@@ -587,7 +775,7 @@ function RoomDesignPage() {
         </div>
         {showTemplatesPopup && <TemplatesPopup />}
 
-        {/* Centered Furniture Catalog and 2D Design Interface */}
+        {/* Furniture Catalog and 2D Design Interface */}
         {isSubmitted && (
           <div className="mt-8 flex justify-center">
             <div className="flex gap-8 w-full max-w-5xl">
@@ -631,7 +819,6 @@ function RoomDesignPage() {
                   ))}
                 </div>
               </div>
-
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-900">
