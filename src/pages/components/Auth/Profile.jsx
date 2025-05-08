@@ -41,7 +41,7 @@ function Profile() {
       <div className="min-h-screen flex justify-center items-center bg-gray-50">
         <div className="flex flex-col items-center">
           <svg
-            className="animate-spin h-10 w-10 text-indigo-600 mb-4"
+            className="animate-spin h-8 w-8 text-indigo-600 mb-4"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -60,25 +60,25 @@ function Profile() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600 text-lg">Loading profile...</p>
+          <p className="text-gray-600 text-sm">Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="bg-white shadow-2xl border-2 border-purple-300 rounded-2xl max-w-md w-full p-10">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
             {error}
           </div>
         )}
 
-        <div className="text-center mb-8">
-          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-indigo-100 mb-6">
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100">
             <svg
-              className="h-12 w-12 text-indigo-600"
+              className="h-8 w-8 text-indigo-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -91,50 +91,52 @@ function Profile() {
               />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Your Profile
-          </h2>
-          <p className="text-gray-500 text-sm">Manage your designer details</p>
+          <h2 className="text-2xl font-bold text-gray-900">Your Profile</h2>
+          <p className="text-sm text-gray-500">Manage your designer details</p>
         </div>
 
         {profile && (
           <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-gray-700 mb-4">
-                <span className="font-semibold text-gray-900 block mb-1">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   Name
-                </span>
-                <span className="text-lg">{profile.displayName}</span>
-              </p>
-              <p className="text-gray-700 mb-4">
-                <span className="font-semibold text-gray-900 block mb-1">
+                </label>
+                <p className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+                  {profile.displayName}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   Email
-                </span>
-                <span className="text-lg">{profile.email}</span>
-              </p>
-              <p className="text-gray-700">
-                <span className="font-semibold text-gray-900 block mb-1">
+                </label>
+                <p className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+                  {profile.email}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
                   User ID
-                </span>
-                <span className="text-sm font-mono bg-gray-100 p-1 rounded">
+                </label>
+                <p className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-mono text-sm">
                   {profile.uid}
-                </span>
-              </p>
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="mt-4 space-y-4">
               <button
                 onClick={() => navigate("/edit-profile")}
-                className="w-full py-3 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="w-full py-2 px-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
               >
                 Edit Profile
               </button>
 
               <button
                 onClick={handleLogout}
-                className="w-full py-3 px-4 bg-white border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="w-full py-2 px-4 rounded-lg text-red-500 border border-red-500 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all"
               >
-                Logout
+                Log out
               </button>
             </div>
           </div>
