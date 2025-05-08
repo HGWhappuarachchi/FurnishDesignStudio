@@ -26,12 +26,12 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-10 border-2 border-purple-300">
-        <div className="text-center mb-10">
-          <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-indigo-100 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100">
             <svg
-              className="h-10 w-10 text-indigo-600"
+              className="h-8 w-8 text-indigo-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -44,21 +44,19 @@ function Login() {
               />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Welcome Back
-          </h2>
-          <p className="text-gray-500">Sign in to your designer account</p>
+          <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
+          <p className="text-sm text-gray-500">Sign in to your account</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
             {error}
           </div>
         )}
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Email address
             </label>
             <input
@@ -66,13 +64,13 @@ function Login() {
               value={email}
               required
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               placeholder="you@example.com"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <input
@@ -80,12 +78,12 @@ function Login() {
               value={password}
               required
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               placeholder="••••••••"
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="mt-2 mb-8 flex items-center justify-between text-sm">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -93,32 +91,24 @@ function Login() {
                 type="checkbox"
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-700"
-              >
+              <label htmlFor="remember-me" className="ml-2 text-gray-700">
                 Remember me
               </label>
             </div>
-            <div className="text-sm">
-              <a
-                href="#"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot password?
-              </a>
-            </div>
+            <a href="#" className="text-indigo-600 hover:text-indigo-500">
+              Forgot password?
+            </a>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full flex justify-center items-center py-3 px-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
+            className={`w-full py-2 px-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
               isLoading ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
             {isLoading ? (
-              <>
+              <div className="flex items-center justify-center">
                 <svg
                   className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
@@ -140,24 +130,22 @@ function Login() {
                   ></path>
                 </svg>
                 Signing in...
-              </>
+              </div>
             ) : (
               "Sign in"
             )}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm">
-          <p className="text-gray-500">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+        <p className="mt-4 text-center text-sm text-gray-500">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
