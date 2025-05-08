@@ -156,6 +156,7 @@ function RoomDesignPage() {
   const [wallColor, setWallColor] = useState("#ffffff");
   const [floorColor, setFloorColor] = useState("#ffffff");
   const [showTemplatesPopup, setShowTemplatesPopup] = useState(false);
+  const [showDesignsPopup, setShowDesignsPopup] = useState(false);
   const [floorType, setFloorType] = useState("tile");
   const [floorTexture, setFloorTexture] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -246,8 +247,8 @@ function RoomDesignPage() {
     const designData = {
       name: designName,
       dimensions: {
-        width: parseFloat(dimensions.width),
-        length: parseFloat(dimensions.length),
+        width: parseFloat(dimensions.width) || 0,
+        length: parseFloat(dimensions.length) || 0,
       },
       wallColor,
       floorColor,
@@ -255,6 +256,7 @@ function RoomDesignPage() {
       floorTexture,
       furniture,
       templateId: selectedTemplate,
+      userEmail: currentUser.email,
       createdAt: new Date().toISOString(),
     };
 
@@ -282,7 +284,7 @@ function RoomDesignPage() {
       fetchDesigns();
     } catch (error) {
       console.error("Error saving design:", error);
-      alert("Failed to save design.");
+      alert("Failed to save design: " + error.message);
     }
   };
 
@@ -301,6 +303,7 @@ function RoomDesignPage() {
     setFurniture(design.furniture);
     setSelectedTemplate(design.templateId);
     setIsSubmitted(true);
+    setShowDesignsPopup(false);
   };
 
   // Delete a design
@@ -325,7 +328,7 @@ function RoomDesignPage() {
       }
     } catch (error) {
       console.error("Error deleting design:", error);
-      alert("Failed to delete design.");
+      alert("Failed to delete design: " + error.message);
     }
   };
 
@@ -399,6 +402,83 @@ function RoomDesignPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const SavedDesignsPopup = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-gray-900">Saved Designs</h2>
+          <button
+            onClick={() => setShowDesignsPopup(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {designs.length === 0 ? (
+            <p className="text-gray-600 col-span-2">No saved designs found.</p>
+          ) : (
+            designs.map((design) => (
+              <div
+                key={design.id}
+                className={`p-4 border rounded-lg transition-all duration-200 ${
+                  selectedDesignId === design.id
+                    ? "border-indigo-500 bg-indigo-50"
+                    : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div
+                    className="cursor-pointer flex-1"
+                    onClick={() => loadDesign(design)}
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {design.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {design.dimensions.width}ft × {design.dimensions.length}ft
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteDesign(design.id)}
+                    className="text-red-600 hover:text-red-800"
+                    title="Delete design"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M9 7v12m6-12v12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
@@ -516,8 +596,8 @@ function RoomDesignPage() {
       state: {
         room: {
           dimensions: {
-            width: parseFloat(dimensions.width),
-            length: parseFloat(dimensions.length),
+            width: parseFloat(dimensions.width) || 0,
+            length: parseFloat(dimensions.length) || 0,
           },
           wallColor,
           floorColor,
@@ -528,10 +608,10 @@ function RoomDesignPage() {
           ...item,
           x:
             (item.x / (dimensions.width * scale)) *
-            parseFloat(dimensions.width),
+            (parseFloat(dimensions.width) || 1),
           y:
             (item.y / (dimensions.length * scale)) *
-            parseFloat(dimensions.length),
+            (parseFloat(dimensions.length) || 1),
           width: item.width / scale,
           length: item.length / scale,
         })),
@@ -545,15 +625,15 @@ function RoomDesignPage() {
         <div className="flex items-center">
           <svg
             className="h-8 w-8 text-indigo-600"
-            fill="none"
+            fill="currentColor"
             stroke="currentColor"
-            viewBox="0 0 24 24"
+            viewBox="0 0 640 512"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              d="M64 160C64 89.3 121.3 32 192 32H448c70.7 0 128 57.3 128 128v33.6c-36.5 7.4-64 39.7-64 78.4v48H128V272c0-38.7-27.5-71-64-78.4V160zM544 272c0-20.9 13.4-38.7 32-45.3c5-1.8 10.4-2.7 16-2.7c26.5 0 48 21.5 48 48V448c0 17.7-14.3 32-32 32H576c-17.7 0-32-14.3-32-32H96c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V272c0-26.5 21.5-48 48-48c5.6 0 11 1 16 2.7c18.6 6.6 32 24.4 32 45.3v48 32h32H512h32V320 272z"
             />
           </svg>
           <span className="ml-2 text-xl font-bold text-gray-900">
@@ -561,12 +641,6 @@ function RoomDesignPage() {
           </span>
         </div>
         <div className="flex gap-2">
-          <Link
-            to="/testDesign"
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
-          >
-            Test Design
-          </Link>
           <Link
             to="/"
             className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
@@ -577,55 +651,6 @@ function RoomDesignPage() {
       </header>
 
       <div className="max-w-6xl mx-auto">
-        {/* Design Management */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Manage Designs
-          </h2>
-          <div className="flex gap-4 mb-4">
-            <input
-              type="text"
-              value={designName}
-              onChange={(e) => setDesignName(e.target.value)}
-              placeholder="Enter design name"
-              className="p-2 border rounded-md flex-1"
-            />
-            <button
-              onClick={saveDesign}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
-            >
-              {selectedDesignId ? "Update Design" : "Save Design"}
-            </button>
-            <button
-              onClick={resetDesign}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300"
-            >
-              New Design
-            </button>
-          </div>
-          <div className="space-y-2">
-            {designs.map((design) => (
-              <div
-                key={design.id}
-                className="flex justify-between items-center p-2 bg-gray-50 rounded-lg"
-              >
-                <span
-                  className="cursor-pointer text-indigo-600 hover:text-indigo-800"
-                  onClick={() => loadDesign(design)}
-                >
-                  {design.name}
-                </span>
-                <button
-                  onClick={() => deleteDesign(design.id)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Customize Your Room */}
         <div className="flex justify-center">
           <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-2xl">
@@ -635,11 +660,31 @@ function RoomDesignPage() {
             <button
               type="button"
               onClick={() => setShowTemplatesPopup(true)}
-              className="w-full px-6 py-3 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 transition-colors duration-300 mb-6"
+              className="w-full px-6 py-3 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 transition-colors duration-300 mb-4"
             >
               Choose Room Template
             </button>
+            <button
+              type="button"
+              onClick={() => setShowDesignsPopup(true)}
+              className="w-full px-6 py-3 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 transition-colors duration-300 mb-6"
+            >
+              Choose Saved Design
+            </button>
             <form onSubmit={handleSubmit}>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Design Name
+                </h3>
+                <input
+                  type="text"
+                  value={designName}
+                  onChange={(e) => setDesignName(e.target.value)}
+                  placeholder="Enter design name"
+                  className="mt-2 p-2 w-full border rounded-md focus:ring-indigo-600 focus:border-indigo-600"
+                  required
+                />
+              </div>
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Room Dimensions (in feet)
@@ -764,16 +809,42 @@ function RoomDesignPage() {
                   </select>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="w-full px-6 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
-              >
-                {selectedTemplate ? "Continue Customizing" : "Create 2D Design"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex basis-1/4 px-4 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
+                >
+                  {selectedTemplate
+                    ? "Continue Customizing"
+                    : "Create 2D Design"}
+                </button>
+                <button
+                  type="button"
+                  onClick={saveDesign}
+                  className="flex basis-1/4 px-4 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
+                >
+                  Save Design
+                </button>
+                <button
+                  type="button"
+                  onClick={saveDesign}
+                  className="flex basis-1/4 px-4 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors duration-300"
+                >
+                  {selectedDesignId ? "Update Design" : "Save Design"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetDesign}
+                  className="flex basis-1/4 px-4 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors duration-300"
+                >
+                  New Design
+                </button>
+              </div>
             </form>
           </div>
         </div>
         {showTemplatesPopup && <TemplatesPopup />}
+        {showDesignsPopup && <SavedDesignsPopup />}
 
         {/* Furniture Catalog and 2D Design Interface */}
         {isSubmitted && (
@@ -826,7 +897,7 @@ function RoomDesignPage() {
                   </h3>
                   <button
                     onClick={goTo3DView}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+                    className="px-4 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
                   >
                     View in 3D
                   </button>

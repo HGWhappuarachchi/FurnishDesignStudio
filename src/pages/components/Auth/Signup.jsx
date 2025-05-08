@@ -27,12 +27,12 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-10 border-2 border-purple-300">
-        <div className="text-center mb-10">
-          <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-indigo-100 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100">
             <svg
-              className="h-10 w-10 text-indigo-600"
+              className="h-8 w-8 text-indigo-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -45,23 +45,21 @@ function Signup() {
               />
             </svg>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Create Account
-          </h2>
-          <p className="text-gray-500">Join the designer community</p>
+          <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+          <p className="text-sm text-gray-500">Join the designer community</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg text-center">
             {error}
           </div>
         )}
 
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
+          <div className="space-y-2">
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700"
             >
               Name
             </label>
@@ -72,15 +70,15 @@ function Signup() {
               required
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               placeholder="Your Name"
             />
           </div>
 
-          <div>
+          <div className="mt-2 space-y-2">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700"
             >
               Email address
             </label>
@@ -91,15 +89,15 @@ function Signup() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               placeholder="you@example.com"
             />
           </div>
 
-          <div>
+          <div className="mt-2 space-y-2">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700"
             >
               Password
             </label>
@@ -110,11 +108,11 @@ function Signup() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
               placeholder="••••••••"
               minLength="6"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mb-4 text-xs text-gray-500">
               Password must be at least 6 characters
             </p>
           </div>
@@ -122,12 +120,12 @@ function Signup() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
+            className={`mt-4 w-full py-2 px-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
               isLoading ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
             {isLoading ? (
-              <>
+              <div className="flex items-center justify-center">
                 <svg
                   className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                   xmlns="http://www.w3.org/2000/svg"
@@ -149,24 +147,22 @@ function Signup() {
                   ></path>
                 </svg>
                 Creating account...
-              </>
+              </div>
             ) : (
               "Sign up"
             )}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm">
-          <p className="text-gray-500">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
